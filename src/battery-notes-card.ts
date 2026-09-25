@@ -16,6 +16,30 @@ if (!customElements.get('battery-notes-card-editor')) {
   customElements.define('battery-notes-card-editor', BatteryNotesCardEditor);
 }
 
+const GENERIC_NAMES = new Set([
+  'batterie fast leer',
+  'batterie-typ',
+  'batterietyp',
+  'letzter batteriewechsel',
+  'batterie zuletzt ersetzt',
+  'batterie ersetzt',
+  'batterie+',
+  'batterie',
+  'battery low',
+  'battery type',
+  'battery last replaced',
+  'battery replaced',
+  'battery+',
+  'battery',
+]);
+
+interface DeviceGroup {
+  id: string;
+  deviceId?: string;
+  baseName: string;
+  entities: HassEntity[];
+}
+
 export class BatteryNotesCard extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @state() private _config!: BatteryNotesCardConfig;
@@ -100,17 +124,34 @@ export class BatteryNotesCard extends LitElement {
   static styles = cardStyles;
 
   /**
-   * Extracts the base name from a Battery Notes entity id by stripping domain and suffixes
+   * Extracts the base device name from an entity id by stripping domain and suffixes
+   * Supports both English and German Battery Notes suffixes
    */
   private _getBaseName(entityId: string): string {
     const objectId = entityId.includes('.') ? entityId.split('.')[1] : entityId;
     return objectId
       .replace(/_battery_last_replaced$/, '')
+      .replace(/_letzter_batteriewechsel$/, '')
+      .replace(/_batterie_zuletzt_ersetzt$/, '')
       .replace(/_battery_type$/, '')
+      .replace(/_batterie_typ$/, '')
+      .replace(/_batterie_art$/, '')
       .replace(/_battery_plus_low$/, '')
       .replace(/_battery_low$/, '')
+      .replace(/_batterie_fast_leer$/, '')
+      .replace(/_batterie_schwach$/, '')
+      .replace(/_niedriger_batteriestand$/, '')
       .replace(/_battery_replaced$/, '')
-      .replace(/_battery_plus$/, '');
+      .replace(/_batterie_ersetzt$/, '')
+      .replace(/_battery_plus$/, '')
+      .replace(/_batterie_plus$/, '')
+      .replace(/_battery$/, '')
+      .replace(/_batterie$/, '');
+  }
+
+  private _isGenericName(name: string): boolean {
+    if (!name) return true;
+    return GENERIC_NAMES.has(name.toLowerCase().trim());
   }
 
   /**
@@ -119,10 +160,66 @@ export class BatteryNotesCard extends LitElement {
   private _cleanDeviceName(name: string): string {
     return name
       .replace(
-        /\s+(Battery Type|Batterietyp|Battery Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Zuletzt gewechselt|Battery Replaced|Battery Low|Batterie schwach|Battery|Batterie)$/i,
+        /\s+(Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery|Batterie)$/i,
         ''
       )
       .trim();
+  }
+
+  private _isTypeSensor(e: HassEntity): boolean {
+    if (!e.entity_id.startsWith('sensor.')) return false;
+    const reg = this.hass.entities?.[e.entity_id];
+    if (reg?.translation_key === 'battery_type') return true;
+    const id = e.entity_id;
+    return (
+      id.endsWith('_battery_type') ||
+      id.endsWith('_batterie_typ') ||
+      id.endsWith('_batterie_art') ||
+      (e.attributes.battery_type !== undefined && !e.attributes.device_class)
+    );
+  }
+
+  private _isPlusSensor(e: HassEntity): boolean {
+    if (!e.entity_id.startsWith('sensor.')) return false;
+    const reg = this.hass.entities?.[e.entity_id];
+    if (reg?.translation_key === 'battery_plus') return true;
+    const id = e.entity_id;
+    return id.endsWith('_battery_plus') || id.endsWith('_batterie_plus');
+  }
+
+  private _isReplacedSensor(e: HassEntity): boolean {
+    if (!e.entity_id.startsWith('sensor.')) return false;
+    const reg = this.hass.entities?.[e.entity_id];
+    if (reg?.translation_key === 'battery_last_replaced') return true;
+    const id = e.entity_id;
+    return (
+      id.endsWith('_battery_last_replaced') ||
+      id.endsWith('_letzter_batteriewechsel') ||
+      id.endsWith('_batterie_zuletzt_ersetzt')
+    );
+  }
+
+  private _isLowSensor(e: HassEntity): boolean {
+    if (!e.entity_id.startsWith('binary_sensor.')) return false;
+    const reg = this.hass.entities?.[e.entity_id];
+    if (reg?.translation_key === 'battery_low') return true;
+    const id = e.entity_id;
+    return (
+      id.endsWith('_battery_low') ||
+      id.endsWith('_battery_plus_low') ||
+      id.endsWith('_batterie_fast_leer') ||
+      id.endsWith('_batterie_schwach') ||
+      id.endsWith('_niedriger_batteriestand') ||
+      e.attributes.device_class === 'battery'
+    );
+  }
+
+  private _isButtonEntity(e: HassEntity): boolean {
+    if (!e.entity_id.startsWith('button.')) return false;
+    const reg = this.hass.entities?.[e.entity_id];
+    if (reg?.translation_key === 'battery_replaced') return true;
+    const id = e.entity_id;
+    return id.endsWith('_battery_replaced') || id.endsWith('_batterie_ersetzt');
   }
 
   /**
@@ -133,93 +230,95 @@ export class BatteryNotesCard extends LitElement {
     if (!this.hass || !this.hass.states) return [];
 
     const states = this.hass.states;
-    const groups = new Map<string, { baseName: string; entities: HassEntity[] }>();
+    let groups: DeviceGroup[] = [];
+    const deviceMap = new Map<string, DeviceGroup>();
+    const baseNameMap = new Map<string, DeviceGroup>();
 
-    // 1. Collect all Battery Notes entities and group by base name
+    // 1. Collect all Battery Notes entities and group by device_id and baseName
     for (const [entityId, entity] of Object.entries(states)) {
       const attrs = entity.attributes || {};
-      const isBatteryType = entityId.startsWith('sensor.') && entityId.endsWith('_battery_type');
-      const isBatteryPlus = entityId.startsWith('sensor.') && entityId.endsWith('_battery_plus');
-      const isBatteryReplaced =
-        entityId.startsWith('sensor.') && entityId.endsWith('_battery_last_replaced');
-      const isBatteryLow =
-        entityId.startsWith('binary_sensor.') &&
-        (entityId.endsWith('_battery_low') || entityId.endsWith('_battery_plus_low'));
-      const isBatteryButton =
-        entityId.startsWith('button.') && entityId.endsWith('_battery_replaced');
-      const hasBatteryNotesAttrs =
-        attrs.battery_type !== undefined || attrs.battery_type_and_quantity !== undefined;
+      const reg = this.hass.entities?.[entityId];
 
-      if (
-        !isBatteryType &&
-        !isBatteryPlus &&
-        !isBatteryReplaced &&
-        !isBatteryLow &&
-        !isBatteryButton &&
-        !hasBatteryNotesAttrs
-      ) {
+      const isBatteryEntity =
+        reg?.platform === 'battery_notes' ||
+        this._isTypeSensor(entity) ||
+        this._isPlusSensor(entity) ||
+        this._isReplacedSensor(entity) ||
+        this._isLowSensor(entity) ||
+        this._isButtonEntity(entity) ||
+        attrs.battery_type !== undefined ||
+        attrs.battery_type_and_quantity !== undefined;
+
+      if (!isBatteryEntity) {
         continue;
       }
 
+      const deviceId: string | undefined = reg?.device_id || attrs.device_id;
       const baseName = this._getBaseName(entityId);
-      if (!groups.has(baseName)) {
-        groups.set(baseName, { baseName, entities: [] });
+
+      let group: DeviceGroup | null = null;
+
+      // Grouping priority: deviceId match first, then baseName match
+      if (deviceId && deviceMap.has(deviceId)) {
+        group = deviceMap.get(deviceId)!;
+      } else if (baseName && baseNameMap.has(baseName)) {
+        group = baseNameMap.get(baseName)!;
       }
-      groups.get(baseName)!.entities.push(entity);
+
+      if (!group) {
+        group = {
+          id: deviceId ? `dev_${deviceId}` : `base_${baseName}`,
+          deviceId,
+          baseName,
+          entities: [],
+        };
+        groups.push(group);
+      } else if (deviceId && !group.deviceId) {
+        // Group discovered previously via baseName, now associating deviceId
+        if (deviceMap.has(deviceId)) {
+          const existingGroup = deviceMap.get(deviceId)!;
+          if (existingGroup !== group) {
+            // Merge group into existingGroup
+            existingGroup.entities.push(...group.entities);
+            groups = groups.filter(g => g !== group);
+            group = existingGroup;
+          }
+        } else {
+          group.deviceId = deviceId;
+        }
+      }
+
+      if (deviceId) {
+        deviceMap.set(deviceId, group);
+      }
+      if (baseName) {
+        baseNameMap.set(baseName, group);
+      }
+
+      group.entities.push(entity);
     }
 
     const result: BatteryDeviceItem[] = [];
     const excludeSet = new Set(this._config.exclude_entities || []);
 
     // Filter by explicitly specified entities if configured
-    let baseNamesToProcess = Array.from(groups.keys());
+    let groupsToProcess = groups;
     if (this._config.entities && this._config.entities.length > 0) {
       const allowedBases = new Set(this._config.entities.map(id => this._getBaseName(id)));
-      baseNamesToProcess = baseNamesToProcess.filter(base => allowedBases.has(base));
+      const allowedEntities = new Set(this._config.entities);
+      groupsToProcess = groupsToProcess.filter(
+        g =>
+          allowedBases.has(g.baseName) ||
+          (g.deviceId && allowedEntities.has(g.deviceId)) ||
+          g.entities.some(e => allowedEntities.has(e.entity_id))
+      );
     }
 
     // 2. Build one unified BatteryDeviceItem per device
-    for (const baseName of baseNamesToProcess) {
-      const group = groups.get(baseName)!;
+    for (const group of groupsToProcess) {
       const entities = group.entities;
-
-      const typeSensor = entities.find(
-        e => e.entity_id.startsWith('sensor.') && e.entity_id.endsWith('_battery_type')
-      );
-      const plusSensor = entities.find(
-        e => e.entity_id.startsWith('sensor.') && e.entity_id.endsWith('_battery_plus')
-      );
-      const replacedSensor = entities.find(
-        e => e.entity_id.startsWith('sensor.') && e.entity_id.endsWith('_battery_last_replaced')
-      );
-      const lowSensor = entities.find(
-        e =>
-          e.entity_id.startsWith('binary_sensor.') &&
-          (e.entity_id.endsWith('_battery_low') || e.entity_id.endsWith('_battery_plus_low'))
-      );
-      const buttonEntity = entities.find(
-        e => e.entity_id.startsWith('button.') && e.entity_id.endsWith('_battery_replaced')
-      );
-
-      // Merge attributes across related entities
-      const allAttrs: Record<string, any> = {};
-      for (const e of entities) {
-        if (e.attributes) {
-          Object.assign(allAttrs, e.attributes);
-        }
-      }
-
-      // Check deviceId
-      let deviceId: string | undefined = allAttrs.device_id;
-      if (!deviceId && this.hass.entities) {
-        for (const e of entities) {
-          const reg = this.hass.entities[e.entity_id];
-          if (reg?.device_id) {
-            deviceId = reg.device_id;
-            break;
-          }
-        }
-      }
+      const deviceId = group.deviceId;
+      const baseName = group.baseName;
 
       // Exclusion checks
       if (excludeSet.has(baseName) || (deviceId && excludeSet.has(deviceId))) {
@@ -227,6 +326,21 @@ export class BatteryNotesCard extends LitElement {
       }
       if (entities.some(e => excludeSet.has(e.entity_id))) {
         continue;
+      }
+
+      // Classify role entities
+      const typeSensor = entities.find(e => this._isTypeSensor(e));
+      const plusSensor = entities.find(e => this._isPlusSensor(e));
+      const replacedSensor = entities.find(e => this._isReplacedSensor(e));
+      const lowSensor = entities.find(e => this._isLowSensor(e));
+      const buttonEntity = entities.find(e => this._isButtonEntity(e));
+
+      // Merge attributes across all related entities
+      const allAttrs: Record<string, any> = {};
+      for (const e of entities) {
+        if (e.attributes) {
+          Object.assign(allAttrs, e.attributes);
+        }
       }
 
       // Primary entity for more-info click
@@ -259,12 +373,14 @@ export class BatteryNotesCard extends LitElement {
       ) {
         batteryLevel = Number(allAttrs.battery_last_reported_level);
       } else if (deviceId && this.hass.entities) {
-        for (const [eId, reg] of Object.entries(this.hass.entities)) {
+        for (const [eId, r] of Object.entries(this.hass.entities)) {
           if (
-            reg.device_id === deviceId &&
+            r.device_id === deviceId &&
             eId.startsWith('sensor.') &&
             !eId.endsWith('_battery_type') &&
-            !eId.endsWith('_battery_last_replaced')
+            !eId.endsWith('_batterie_typ') &&
+            !eId.endsWith('_battery_last_replaced') &&
+            !eId.endsWith('_letzter_batteriewechsel')
           ) {
             const st = states[eId];
             if (st && st.attributes?.device_class === 'battery' && !isNaN(parseFloat(st.state))) {
@@ -275,24 +391,46 @@ export class BatteryNotesCard extends LitElement {
         }
       }
 
-      // Device Name resolution
+      // Device Name resolution: Avoid generic sensor names like "Batterie fast leer" or "Batterie-Typ"
       let name = '';
-      if (deviceId && this.hass.devices?.[deviceId]?.name_by_user) {
-        name = this.hass.devices[deviceId].name_by_user!;
-      } else if (allAttrs.device_name) {
-        name = allAttrs.device_name;
-      } else if (deviceId && this.hass.devices?.[deviceId]?.name) {
-        name = this.hass.devices[deviceId].name!;
-      } else if (typeSensor?.attributes?.friendly_name) {
-        name = this._cleanDeviceName(typeSensor.attributes.friendly_name);
-      } else if (plusSensor?.attributes?.friendly_name) {
-        name = this._cleanDeviceName(plusSensor.attributes.friendly_name);
-      } else if (
-        allAttrs.source_entity_id &&
-        states[allAttrs.source_entity_id]?.attributes?.friendly_name
+      if (
+        deviceId &&
+        this.hass.devices?.[deviceId]?.name_by_user &&
+        !this._isGenericName(this.hass.devices[deviceId].name_by_user!)
       ) {
-        name = this._cleanDeviceName(states[allAttrs.source_entity_id].attributes.friendly_name!);
-      } else {
+        name = this.hass.devices[deviceId].name_by_user!;
+      } else if (
+        deviceId &&
+        this.hass.devices?.[deviceId]?.name &&
+        !this._isGenericName(this.hass.devices[deviceId].name!)
+      ) {
+        name = this.hass.devices[deviceId].name!;
+      } else if (allAttrs.device_name && !this._isGenericName(allAttrs.device_name)) {
+        name = allAttrs.device_name;
+      }
+
+      if (!name) {
+        // Try to get a non-generic friendly name from any related entity
+        for (const e of entities) {
+          const rawFriendly = e.attributes?.friendly_name;
+          if (rawFriendly) {
+            const cleaned = this._cleanDeviceName(rawFriendly);
+            if (cleaned && !this._isGenericName(cleaned)) {
+              name = cleaned;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!name && allAttrs.source_entity_id && states[allAttrs.source_entity_id]?.attributes?.friendly_name) {
+        const cleaned = this._cleanDeviceName(states[allAttrs.source_entity_id].attributes.friendly_name!);
+        if (cleaned && !this._isGenericName(cleaned)) {
+          name = cleaned;
+        }
+      }
+
+      if (!name) {
         name = baseName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       }
 
@@ -337,13 +475,15 @@ export class BatteryNotesCard extends LitElement {
       let buttonEntityId = buttonEntity?.entity_id;
       if (!buttonEntityId && states[`button.${baseName}_battery_replaced`]) {
         buttonEntityId = `button.${baseName}_battery_replaced`;
+      } else if (!buttonEntityId && states[`button.${baseName}_batterie_ersetzt`]) {
+        buttonEntityId = `button.${baseName}_batterie_ersetzt`;
       }
 
       const isUnavailable =
         typeSensor?.state === 'unavailable' || plusSensor?.state === 'unavailable';
 
       result.push({
-        id: baseName,
+        id: group.id,
         deviceId,
         sourceEntityId: allAttrs.source_entity_id,
         entityId: primaryEntity.entity_id,
@@ -676,8 +816,7 @@ export class BatteryNotesCard extends LitElement {
                           ? html`
                               <th
                                 class="col-battery-th sortable"
-                                @click=${() => this._handleSort('battery')}
-                              >
+                                @click=${() => this._handleSort('battery')}>
                                 <div class="th-content">
                                   <span>${localize('col_battery', lang)}</span>
                                   ${this._sortBy === 'battery'

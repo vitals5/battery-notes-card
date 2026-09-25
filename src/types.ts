@@ -34,7 +34,7 @@ export interface HomeAssistant {
     date_format?: string;
   };
   devices?: Record<string, { id: string; name?: string; name_by_user?: string | null; manufacturer?: string; model?: string }>;
-  entities?: Record<string, { entity_id: string; device_id?: string; name?: string; original_name?: string }>;
+  entities?: Record<string, { entity_id: string; device_id?: string; name?: string; original_name?: string; translation_key?: string; platform?: string; [key: string]: any }>;
   callService: (domain: string, service: string, serviceData?: Record<string, any>) => Promise<any>;
 }
 

@@ -55,7 +55,7 @@ Click the badge below to open the repository directly in HACS on your Home Assis
 1. Download the `battery-notes-card.js` file from the [Releases](https://github.com/vitals5/battery-notes-card/releases) page or the `dist/` directory.
 2. Copy the file to your Home Assistant configuration directory under `config/www/battery-notes-card.js`.
 3. In Home Assistant, navigate to **Settings** ➔ **Dashboards** ➔ **Resources** (three-dots menu in the top right) and add a new resource:
-   - **URL:** `/local/battery-notes-card.js?v=1.0.5`
+   - **URL:** `/local/battery-notes-card.js?v=1.0.6`
    - **Resource Type:** `JavaScript Module`
 4. Refresh your dashboard.
 

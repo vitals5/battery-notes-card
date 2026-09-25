@@ -8,6 +8,10 @@ A modern, responsive, and highly customizable **Home Assistant Dashboard Card** 
 
 The card automatically aggregates and displays all devices tracked by Battery Notes in a clean, interactive tabular overview—including battery level (percentage & color-coded progress bar), battery type and quantity (e.g. `CR2032`, `2x AAA`), last replaced date, notes, and a **direct action button to record battery replacements**.
 
+<p align="center">
+  <img src="images/screenshot.jpg" alt="Battery Notes Card Preview" width="500">
+</p>
+
 ---
 
 ## ✨ Features

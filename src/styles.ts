@@ -12,10 +12,10 @@ export const cardStyles = css`
   }
 
   .card-container {
-    container-type: inline-size;
     display: flex;
     flex-direction: column;
     gap: 12px;
+    width: 100%;
   }
 
   /* Header */
@@ -25,7 +25,7 @@ export const cardStyles = css`
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
 
   .header-title-container {
@@ -176,6 +176,7 @@ export const cardStyles = css`
 
   .battery-table {
     width: 100%;
+    min-width: 100%;
     border-collapse: collapse;
     text-align: left;
     font-size: 0.875rem;
@@ -212,7 +213,7 @@ export const cardStyles = css`
   }
 
   .battery-table td {
-    padding: 9px 12px;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--divider-color, rgba(127, 127, 127, 0.1));
     vertical-align: middle;
   }
@@ -229,11 +230,55 @@ export const cardStyles = css`
     background: rgba(var(--rgb-error-color, 244, 67, 54), 0.04);
   }
 
+  /* Specific column styling */
+  .col-name-th,
+  .col-name-td {
+    min-width: 140px;
+    text-align: left;
+  }
+
+  .col-battery-th,
+  .col-battery-td {
+    min-width: 130px;
+    text-align: left;
+  }
+
+  .col-type-th,
+  .col-type-td {
+    min-width: 90px;
+    text-align: left;
+  }
+
+  .col-last-replaced-th,
+  .col-last-replaced-td {
+    min-width: 120px;
+    text-align: left;
+  }
+
+  .col-status-th,
+  .col-status-td {
+    min-width: 75px;
+    text-align: center;
+  }
+
+  .col-note-th,
+  .col-note-td {
+    min-width: 100px;
+    text-align: left;
+  }
+
+  .col-actions-th,
+  .col-actions-td {
+    min-width: 95px;
+    text-align: center;
+  }
+
   /* Cell elements */
   .device-cell {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    max-width: 260px;
   }
 
   .device-name-btn {
@@ -246,6 +291,8 @@ export const cardStyles = css`
     color: var(--primary-text-color);
     cursor: pointer;
     text-decoration: none;
+    line-height: 1.3;
+    word-break: break-word;
   }
 
   .device-name-btn:hover {
@@ -256,6 +303,9 @@ export const cardStyles = css`
   .device-subtext {
     font-size: 0.75rem;
     color: var(--secondary-text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* Battery level bar and percent */
@@ -263,15 +313,18 @@ export const cardStyles = css`
     display: flex;
     align-items: center;
     gap: 8px;
-    min-width: 120px;
+    white-space: nowrap;
   }
 
   .battery-icon {
     --mdc-icon-size: 20px;
+    flex-shrink: 0;
   }
 
   .battery-bar-container {
     flex: 1;
+    min-width: 45px;
+    max-width: 80px;
     height: 6px;
     background: var(--divider-color, rgba(127, 127, 127, 0.2));
     border-radius: 3px;
@@ -287,8 +340,9 @@ export const cardStyles = css`
   .battery-percent-text {
     font-variant-numeric: tabular-nums;
     font-weight: 600;
-    min-width: 38px;
+    min-width: 36px;
     text-align: right;
+    font-size: 0.85rem;
   }
 
   /* Dynamic battery colors */
@@ -348,7 +402,7 @@ export const cardStyles = css`
 
   /* Last Replaced cell */
   .last-replaced-cell {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
     white-space: nowrap;
@@ -358,6 +412,7 @@ export const cardStyles = css`
 
   .last-replaced-cell ha-icon {
     --mdc-icon-size: 16px;
+    flex-shrink: 0;
   }
 
   /* Status badge */
@@ -365,7 +420,7 @@ export const cardStyles = css`
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 2px 7px;
+    padding: 2px 8px;
     border-radius: 10px;
     font-size: 0.75rem;
     font-weight: 600;
@@ -391,12 +446,13 @@ export const cardStyles = css`
   .action-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 4px;
     background: var(--primary-color);
     color: var(--text-primary-color, #ffffff);
     border: none;
     border-radius: 6px;
-    padding: 4px 10px;
+    padding: 5px 10px;
     font-size: 0.775rem;
     font-weight: 500;
     cursor: pointer;
@@ -414,6 +470,7 @@ export const cardStyles = css`
 
   .action-btn ha-icon {
     --mdc-icon-size: 15px;
+    flex-shrink: 0;
   }
 
   .action-btn.success {
@@ -428,6 +485,7 @@ export const cardStyles = css`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: inline-block;
   }
 
   /* Empty state */
@@ -456,36 +514,5 @@ export const cardStyles = css`
 
   .compact .battery-bar-container {
     height: 4px;
-  }
-
-  /* Responsive styling via Container Queries */
-  @container (max-width: 650px) {
-    .hide-on-medium {
-      display: none !important;
-    }
-  }
-
-  @container (max-width: 480px) {
-    .hide-on-small {
-      display: none !important;
-    }
-
-    .card-header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .controls-row {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .battery-level-cell {
-      min-width: 90px;
-    }
-
-    .battery-bar-container {
-      display: none;
-    }
   }
 `;

@@ -33,7 +33,7 @@ export interface HomeAssistant {
     time_format?: string;
     date_format?: string;
   };
-  devices?: Record<string, { id: string; name?: string; manufacturer?: string; model?: string }>;
+  devices?: Record<string, { id: string; name?: string; name_by_user?: string | null; manufacturer?: string; model?: string }>;
   entities?: Record<string, { entity_id: string; device_id?: string; name?: string; original_name?: string }>;
   callService: (domain: string, service: string, serviceData?: Record<string, any>) => Promise<any>;
 }

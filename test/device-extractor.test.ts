@@ -492,6 +492,116 @@ describe('Device Extractor Unit Tests', () => {
       const dev = devices[0];
       assert.strictEqual(dev.name, 'Küche Rauchmelder');
     });
+
+    it('Scenario 13: Non-Battery-Notes binary sensor with device_class battery must be completely excluded', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'binary_sensor.smoke_alarm_sbs50148a0d90_0000000a_battery_status': {
+            entity_id: 'binary_sensor.smoke_alarm_sbs50148a0d90_0000000a_battery_status',
+            state: 'off',
+            attributes: {
+              device_class: 'battery',
+              friendly_name: 'Smoke Alarm SBS50148A0D90 0000000A Battery Status',
+            },
+          },
+        },
+        callService: async () => {},
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig);
+      // Must NOT create any device row!
+      assert.strictEqual(devices.length, 0);
+    });
+
+    it('Scenario 14: Multiple non-Battery-Notes entities from raw hardware integrations are strictly ignored', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'binary_sensor.garden_sensor_battery_low': {
+            entity_id: 'binary_sensor.garden_sensor_battery_low',
+            state: 'off',
+            attributes: {
+              device_class: 'battery',
+              friendly_name: 'Gartensensor Batterie schwach',
+            },
+          },
+          'binary_sensor.motion_hallway_battery_status': {
+            entity_id: 'binary_sensor.motion_hallway_battery_status',
+            state: 'off',
+            attributes: {
+              device_class: 'battery',
+              friendly_name: 'Flur Bewegungsmelder Batteriestatus',
+            },
+          },
+        },
+        callService: async () => {},
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig);
+      assert.strictEqual(devices.length, 0);
+    });
+
+    it('Scenario 15: Battery Notes device anchored by sensor.*_battery_plus cleanly groups companion entities while ignoring hardware battery_status', () => {
+      const hass: HomeAssistant = {
+        states: {
+          // Battery Notes device channel 00000001
+          'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_plus': {
+            entity_id: 'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_plus',
+            state: '94',
+            attributes: {
+              device_class: 'battery',
+              friendly_name: 'Rauchmelder Flur Battery+',
+              battery_type: 'CR123A',
+              battery_quantity: 1,
+              battery_type_and_quantity: 'CR123A',
+            },
+          },
+          'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type': {
+            entity_id: 'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type',
+            state: 'CR123A',
+            attributes: {
+              friendly_name: 'Batterie-Typ',
+              battery_type: 'CR123A',
+              battery_quantity: 1,
+            },
+          },
+          'binary_sensor.smoke_alarm_sbs50148a0d90_00000001_battery_low': {
+            entity_id: 'binary_sensor.smoke_alarm_sbs50148a0d90_00000001_battery_low',
+            state: 'off',
+            attributes: {
+              friendly_name: 'Batterie fast leer',
+            },
+          },
+          'button.smoke_alarm_sbs50148a0d90_00000001_battery_replaced': {
+            entity_id: 'button.smoke_alarm_sbs50148a0d90_00000001_battery_replaced',
+            state: '2025-01-15',
+            attributes: {
+              friendly_name: 'Batterie ersetzt',
+            },
+          },
+          // Hardware status binary sensor from channel 0000000a (NOT Battery Notes!)
+          'binary_sensor.smoke_alarm_sbs50148a0d90_0000000a_battery_status': {
+            entity_id: 'binary_sensor.smoke_alarm_sbs50148a0d90_0000000a_battery_status',
+            state: 'off',
+            attributes: {
+              device_class: 'battery',
+              friendly_name: 'Smoke Alarm SBS50148A0D90 0000000A Battery Status',
+            },
+          },
+        },
+        callService: async () => {},
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig);
+
+      // Must be EXACTLY 1 device row (the real Battery Notes smoke alarm)!
+      assert.strictEqual(devices.length, 1);
+      const dev = devices[0];
+      assert.strictEqual(dev.name, 'Rauchmelder Flur');
+      assert.strictEqual(dev.batteryLevel, 94);
+      assert.strictEqual(dev.batteryTypeAndQuantity, 'CR123A');
+      assert.strictEqual(dev.isLow, false);
+      assert.strictEqual(dev.buttonEntityId, 'button.smoke_alarm_sbs50148a0d90_00000001_battery_replaced');
+    });
   });
 });
 

@@ -16,12 +16,19 @@ export const GENERIC_NAMES = new Set([
   'batterie ersetzt',
   'batterie+',
   'batterie',
+  'batterie plus',
+  'batterie-plus',
   'battery low',
   'battery type',
   'battery last replaced',
   'battery replaced',
   'battery+',
   'battery',
+  'battery plus',
+  'battery-plus',
+  'battery status',
+  'batteriestatus',
+  'batterie status',
 ]);
 
 export function isGenericName(name: string | null | undefined): boolean {
@@ -29,7 +36,7 @@ export function isGenericName(name: string | null | undefined): boolean {
   const n = name.toLowerCase().trim();
   if (GENERIC_NAMES.has(n)) return true;
   if (
-    /^(?:battery|batterie)[_\-\s]*(?:type|typ|low|fast[_\-\s]*leer|replaced|ersetzt|last[_\-\s]*replaced|plus|\+)*(?:[_\-\s]*\d+)?$/i.test(
+    /^(?:battery|batterie)[_\-\s]*(?:type|typ|low|fast[_\-\s]*leer|replaced|ersetzt|last[_\-\s]*replaced|plus|\+|status)*(?:[_\-\s]*\d+)?$/i.test(
       n
     )
   ) {
@@ -42,11 +49,11 @@ export function cleanDeviceName(name: string | null | undefined): string {
   if (!name) return '';
   return name
     .replace(
-      /\s*(?:[-–—:]|\()\s*(?:Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery|Batterie)\s*\)?$/i,
+      /\s*(?:[-–—:]|\()\s*(?:Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Batterie Plus|Batterie-Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery Status|Batteriestatus|Batterie Status|Battery|Batterie)\s*\)?$/i,
       ''
     )
     .replace(
-      /\s+(?:Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery|Batterie)$/i,
+      /\s+(?:Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Batterie Plus|Batterie-Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery Status|Batteriestatus|Batterie Status|Battery|Batterie)$/i,
       ''
     )
     .replace(/[\s\-_:–—()]+$/g, '')
@@ -128,7 +135,9 @@ export function isPlusSensor(e: HassEntity, reg?: any): boolean {
     id.endsWith('_battery_plus') ||
     id.endsWith('_batterie_plus') ||
     id.endsWith('_battery+') ||
-    id.endsWith('_batterie+')
+    id.endsWith('_batterie+') ||
+    id === 'sensor.battery_plus' ||
+    id === 'sensor.batterie_plus'
   );
 }
 
@@ -145,15 +154,15 @@ export function isReplacedSensor(e: HassEntity, reg?: any): boolean {
 
 export function isLowSensor(e: HassEntity, reg?: any): boolean {
   if (!e.entity_id.startsWith('binary_sensor.')) return false;
-  if (reg?.translation_key === 'battery_low') return true;
+  if (reg?.translation_key === 'battery_low' || reg?.translation_key === 'battery_plus_low') return true;
+  if (reg?.platform === 'battery_notes') return true;
   const id = e.entity_id.toLowerCase();
   return (
     id.endsWith('_battery_low') ||
     id.endsWith('_battery_plus_low') ||
     id.endsWith('_batterie_fast_leer') ||
     id.endsWith('_batterie_schwach') ||
-    id.endsWith('_niedriger_batteriestand') ||
-    e.attributes.device_class === 'battery'
+    id.endsWith('_niedriger_batteriestand')
   );
 }
 
@@ -294,6 +303,31 @@ export function extractBatteryDevices(
       if (e.attributes) {
         Object.assign(allAttrs, e.attributes);
       }
+    }
+
+    // Device Qualification:
+    // In automatic discovery mode (when config.entities is not specified or empty),
+    // a device MUST qualify as a genuine Battery Notes device.
+    // Every Battery Notes device has a sensor.*_battery_plus entity (isPlusSensor),
+    // or has a battery_type sensor/attribute or platform === 'battery_notes'.
+    // Standalone binary sensors or generic entities without Battery Notes backing are strictly discarded.
+    const isExplicitlyAllowed = Boolean(config.entities && config.entities.length > 0);
+    const hasPlusSensor = Boolean(plusSensor);
+    const hasBatteryNotesSignature =
+      Boolean(
+        typeSensor &&
+          (allAttrs.battery_type !== undefined ||
+            allAttrs.battery_type_and_quantity !== undefined ||
+            (typeSensor.state && typeSensor.state !== 'unknown' && typeSensor.state !== 'unavailable'))
+      ) ||
+      Boolean(allAttrs.battery_type !== undefined || allAttrs.battery_type_and_quantity !== undefined) ||
+      entities.some(e => {
+        const r = registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id];
+        return r?.platform === 'battery_notes';
+      });
+
+    if (!isExplicitlyAllowed && !hasPlusSensor && !hasBatteryNotesSignature) {
+      continue;
     }
 
     const primaryEntity = plusSensor || typeSensor || entities[0];

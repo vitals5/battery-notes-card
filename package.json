@@ -1,0 +1,37 @@
+{
+  "name": "battery-notes-card",
+  "version": "1.0.0",
+  "description": "Home Assistant Dashboard Lovelace card companion for Battery Notes integration",
+  "main": "dist/battery-notes-card.js",
+  "scripts": {
+    "build": "tsc --noEmit && esbuild src/battery-notes-card.ts --bundle --minify --sourcemap --target=es2022 --outfile=dist/battery-notes-card.js && cp dist/battery-notes-card.js ./battery-notes-card.js",
+    "dev": "esbuild src/battery-notes-card.ts --bundle --sourcemap --target=es2022 --outfile=dist/battery-notes-card.js --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "home-assistant",
+    "homeassistant",
+    "lovelace",
+    "custom-cards",
+    "battery-notes",
+    "hacs"
+  ],
+  "author": "vitals5",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vitals5/battery-notes-card.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vitals5/battery-notes-card/issues"
+  },
+  "homepage": "https://github.com/vitals5/battery-notes-card#readme",
+  "dependencies": {
+    "lit": "^3.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.8.2"
+  }
+}

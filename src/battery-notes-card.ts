@@ -5,6 +5,7 @@ import {
   BatteryNotesCardConfig,
   BatteryDeviceItem,
   LovelaceCardEditor,
+  HomeAssistantRegistries,
 } from './types';
 import { cardStyles } from './styles';
 import { localize } from './localize';
@@ -24,6 +25,9 @@ export class BatteryNotesCard extends LitElement {
   @state() private _sortBy: 'battery' | 'name' | 'type' | 'last_replaced' | 'status' = 'battery';
   @state() private _sortDirection: 'asc' | 'desc' = 'asc';
   @state() private _recentlyReplaced = new Set<string>();
+
+  private _registriesLoaded = false;
+  private _registries: HomeAssistantRegistries = {};
 
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     return document.createElement('battery-notes-card-editor') as LovelaceCardEditor;
@@ -99,11 +103,46 @@ export class BatteryNotesCard extends LitElement {
 
   static styles = cardStyles;
 
+  public connectedCallback(): void {
+    super.connectedCallback();
+    this._fetchRegistries();
+  }
+
+  protected updated(changedProperties: Map<string | number | symbol, unknown>): void {
+    super.updated(changedProperties);
+    if (changedProperties.has('hass') && !this._registriesLoaded) {
+      this._fetchRegistries();
+    }
+  }
+
+  private async _fetchRegistries(): Promise<void> {
+    if (this._registriesLoaded || !this.hass?.connection) return;
+    this._registriesLoaded = true;
+
+    try {
+      const [entities, devices, areas] = await Promise.all([
+        this.hass.connection.sendMessagePromise<any[]>({ type: 'config/entity_registry/list' }).catch(() => []),
+        this.hass.connection.sendMessagePromise<any[]>({ type: 'config/device_registry/list' }).catch(() => []),
+        this.hass.connection.sendMessagePromise<any[]>({ type: 'config/area_registry/list' }).catch(() => []),
+      ]);
+
+      this._registries = {
+        entities: entities?.length ? new Map(entities.map(e => [e.entity_id, e])) : undefined,
+        devices: devices?.length ? new Map(devices.map(d => [d.id, d])) : undefined,
+        areas: areas?.length ? new Map(areas.map(a => [a.area_id, a])) : undefined,
+      };
+
+      this.requestUpdate();
+    } catch {
+      // Non-admin or WebSocket unavailable
+    }
+  }
+
   /**
    * Scans and aggregates all battery-powered devices managed by Battery Notes
    */
   private _getBatteryDevices(): BatteryDeviceItem[] {
-    return extractBatteryDevices(this.hass, this._config);
+    return extractBatteryDevices(this.hass, this._config, this._registries);
   }
 
   private _formatRelativeTime(date: Date | null, lang: string): string {
@@ -518,6 +557,9 @@ export class BatteryNotesCard extends LitElement {
                                       >
                                         ${item.name}
                                       </button>
+                                      ${item.area && !item.name.toLowerCase().includes(item.area.toLowerCase())
+                                        ? html`<span class="device-subtext"><ha-icon icon="mdi:map-marker-outline" style="--mdc-icon-size: 12px; margin-right: 2px;"></ha-icon>${item.area}</span>`
+                                        : ''}
                                       ${item.note && !cols.note
                                         ? html`<span class="device-subtext">${item.note}</span>`
                                         : ''}

@@ -6,7 +6,7 @@ import {
   isGenericName,
   getBaseName,
 } from '../src/device-extractor.ts';
-import type { HomeAssistant, BatteryNotesCardConfig } from '../src/types.ts';
+import type { HomeAssistant, BatteryNotesCardConfig, HomeAssistantRegistries } from '../src/types.ts';
 
 const defaultConfig: BatteryNotesCardConfig = {
   type: 'custom:battery-notes-card',
@@ -306,5 +306,192 @@ describe('Device Extractor Unit Tests', () => {
       const dev = devices[0];
       assert.strictEqual(dev.name, 'Buero-Fenster');
     });
+
+    it('Scenario 8: Smoke alarm without battery percentage sensor resolves real name and room via device registry', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type': {
+            entity_id: 'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type',
+            state: 'CR123A',
+            attributes: {
+              friendly_name: 'Batterie-Typ',
+              battery_type: 'CR123A',
+              battery_quantity: 1,
+            },
+          },
+          'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_last_replaced': {
+            entity_id: 'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_last_replaced',
+            state: '2025-01-15',
+            attributes: {
+              friendly_name: 'Letzter Batteriewechsel',
+            },
+          },
+          'button.smoke_alarm_sbs50148a0d90_00000001_battery_replaced': {
+            entity_id: 'button.smoke_alarm_sbs50148a0d90_00000001_battery_replaced',
+            state: '2025-01-15',
+            attributes: {
+              friendly_name: 'Batterie ersetzt',
+            },
+          },
+        },
+        callService: async () => {},
+      };
+
+      const registries: HomeAssistantRegistries = {
+        entities: new Map([
+          [
+            'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type',
+            { entity_id: 'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type', device_id: 'dev_smoke_1' },
+          ],
+        ]),
+        devices: new Map([
+          [
+            'dev_smoke_1',
+            { id: 'dev_smoke_1', name_by_user: 'Rauchmelder Flur', name: 'Smoke Alarm', area_id: 'area_flur' },
+          ],
+        ]),
+        areas: new Map([
+          ['area_flur', { area_id: 'area_flur', name: 'Flur' }],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+
+      assert.strictEqual(devices.length, 1);
+      const dev = devices[0];
+      assert.strictEqual(dev.name, 'Rauchmelder Flur');
+      assert.strictEqual(dev.area, 'Flur');
+      assert.strictEqual(dev.batteryLevel, null);
+      assert.strictEqual(dev.batteryTypeAndQuantity, 'CR123A');
+      assert.strictEqual(dev.buttonEntityId, 'button.smoke_alarm_sbs50148a0d90_00000001_battery_replaced');
+    });
+
+    it('Scenario 9: Smoke alarm resolves room name from sibling entity in hass.states when no registry is available', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type': {
+            entity_id: 'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type',
+            state: 'CR123A',
+            attributes: {
+              friendly_name: 'Batterie-Typ',
+              battery_type: 'CR123A',
+              battery_quantity: 1,
+            },
+          },
+          'binary_sensor.smoke_alarm_sbs50148a0d90_00000001_smoke_alarm': {
+            entity_id: 'binary_sensor.smoke_alarm_sbs50148a0d90_00000001_smoke_alarm',
+            state: 'off',
+            attributes: {
+              friendly_name: 'Rauchmelder Wohnzimmer Rauchalarm',
+            },
+          },
+        },
+        callService: async () => {},
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig);
+
+      assert.strictEqual(devices.length, 1);
+      const dev = devices[0];
+      assert.strictEqual(dev.name, 'Rauchmelder Wohnzimmer');
+      assert.strictEqual(dev.batteryTypeAndQuantity, 'CR123A');
+    });
+
+    it('Scenario 10: Smoke alarm falls back to clean formatted name without technical hex/MAC/zero-padding', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type': {
+            entity_id: 'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type',
+            state: 'CR123A',
+            attributes: {
+              friendly_name: 'Batterie-Typ',
+              battery_type: 'CR123A',
+              battery_quantity: 1,
+            },
+          },
+        },
+        callService: async () => {},
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig);
+
+      assert.strictEqual(devices.length, 1);
+      const dev = devices[0];
+      // Must NOT be "Smoke Alarm Sbs50148a0d90 00000001" or "sensor.smoke_alarm..."!
+      assert.strictEqual(dev.name, 'Smoke Alarm 1');
+      assert.strictEqual(dev.batteryTypeAndQuantity, 'CR123A');
+    });
+
+    it('Scenario 11: Smoke alarm with area in registry and generic device name combines area into name', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type': {
+            entity_id: 'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type',
+            state: 'CR123A',
+            attributes: {
+              friendly_name: 'Batterie-Typ',
+              battery_type: 'CR123A',
+              battery_quantity: 1,
+            },
+          },
+        },
+        callService: async () => {},
+      };
+
+      const registries: HomeAssistantRegistries = {
+        entities: new Map([
+          [
+            'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type',
+            { entity_id: 'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type', device_id: 'dev_smoke_2' },
+          ],
+        ]),
+        devices: new Map([
+          [
+            'dev_smoke_2',
+            { id: 'dev_smoke_2', name: 'Smoke Alarm', area_id: 'area_schlafzimmer' },
+          ],
+        ]),
+        areas: new Map([
+          ['area_schlafzimmer', { area_id: 'area_schlafzimmer', name: 'Schlafzimmer' }],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+
+      assert.strictEqual(devices.length, 1);
+      const dev = devices[0];
+      assert.strictEqual(dev.name, 'Schlafzimmer Smoke Alarm');
+      assert.strictEqual(dev.area, 'Schlafzimmer');
+    });
+
+    it('Scenario 12: Manual override via config.device_names', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type': {
+            entity_id: 'sensor.smoke_alarm_sbs50148a0d90_00000001_battery_type',
+            state: 'CR123A',
+            attributes: {
+              friendly_name: 'Batterie-Typ',
+              battery_type: 'CR123A',
+            },
+          },
+        },
+        callService: async () => {},
+      };
+
+      const configWithCustomName: BatteryNotesCardConfig = {
+        type: 'custom:battery-notes-card',
+        device_names: {
+          smoke_alarm_sbs50148a0d90_00000001: 'Küche Rauchmelder',
+        },
+      };
+
+      const devices = extractBatteryDevices(hass, configWithCustomName);
+
+      assert.strictEqual(devices.length, 1);
+      const dev = devices[0];
+      assert.strictEqual(dev.name, 'Küche Rauchmelder');
+    });
   });
 });
+

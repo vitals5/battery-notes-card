@@ -1,4 +1,10 @@
-import type { HomeAssistant, BatteryNotesCardConfig, BatteryDeviceItem, HassEntity } from './types.ts';
+import type {
+  HomeAssistant,
+  BatteryNotesCardConfig,
+  BatteryDeviceItem,
+  HassEntity,
+  HomeAssistantRegistries,
+} from './types.ts';
 
 export const GENERIC_NAMES = new Set([
   'batterie fast leer',
@@ -45,6 +51,42 @@ export function cleanDeviceName(name: string | null | undefined): string {
     )
     .replace(/[\s\-_:–—()]+$/g, '')
     .trim();
+}
+
+/**
+ * Cleans trailing entity-specific role nouns from friendly names of sibling entities
+ * (e.g. "Rauchmelder Flur Rauchalarm" -> "Rauchmelder Flur")
+ */
+export function cleanSiblingDeviceName(name: string | null | undefined): string {
+  if (!name) return '';
+  let cleaned = cleanDeviceName(name);
+  if (!cleaned) return '';
+
+  const rolePattern = /(?:\s+|-)(?:Rauchalarm|Rauch|Sabotagekontakt|Sabotage|Status|State|Alarm|Detection)$/i;
+  while (rolePattern.test(cleaned)) {
+    const next = cleaned.replace(rolePattern, '').trim();
+    if (next.length >= 3 && !isGenericName(next)) {
+      cleaned = next;
+    } else {
+      break;
+    }
+  }
+
+  return cleaned;
+}
+
+/**
+ * Converts technical object IDs (e.g. smoke_alarm_sbs50148a0d90_00000001) into clean, human-readable names
+ * (e.g. "Smoke Alarm 1")
+ */
+export function formatTechnicalDeviceName(baseName: string): string {
+  if (!baseName) return '';
+  // 1. Normalize zero-padded numbers e.g. _00000001 -> _1
+  let cleaned = baseName.replace(/([_-])0+([1-9]\d*)\b/g, '$1$2');
+  // 2. Strip hardware MAC/serial tokens e.g. sbs50148a0d90 or hex hashes
+  cleaned = cleaned.replace(/([_-])(?:sbs\d+[a-f0-9]+|[a-f0-9]*[a-f][a-f0-9]{5,})/gi, '');
+  cleaned = cleaned.replace(/^_+|_+$/g, '').replace(/_+/g, ' ');
+  return cleaned.replace(/\b\w/g, l => l.toUpperCase()).trim() || baseName;
 }
 
 export function getBaseName(entityId: string): string {
@@ -131,7 +173,8 @@ interface DeviceGroup {
 
 export function extractBatteryDevices(
   hass: HomeAssistant,
-  config: BatteryNotesCardConfig
+  config: BatteryNotesCardConfig,
+  registries?: HomeAssistantRegistries
 ): BatteryDeviceItem[] {
   if (!hass || !hass.states) return [];
 
@@ -143,7 +186,7 @@ export function extractBatteryDevices(
   // 1. Collect all Battery Notes entities and group by deviceId or baseName
   for (const [entityId, entity] of Object.entries(states)) {
     const attrs = entity.attributes || {};
-    const reg = hass.entities?.[entityId];
+    const reg = registries?.entities?.get(entityId) || hass.entities?.[entityId];
 
     const isBattery =
       reg?.platform === 'battery_notes' ||
@@ -231,6 +274,7 @@ export function extractBatteryDevices(
     const entities = group.entities;
     const deviceId = group.deviceId;
     const baseName = group.baseName;
+    const baseWithoutSub = baseName.replace(/([_-])0*[0-9a-f]{6,}\b/i, '');
 
     if (excludeSet.has(baseName) || (deviceId && excludeSet.has(deviceId))) {
       continue;
@@ -239,11 +283,11 @@ export function extractBatteryDevices(
       continue;
     }
 
-    const typeSensor = entities.find(e => isTypeSensor(e, hass.entities?.[e.entity_id]));
-    const plusSensor = entities.find(e => isPlusSensor(e, hass.entities?.[e.entity_id]));
-    const replacedSensor = entities.find(e => isReplacedSensor(e, hass.entities?.[e.entity_id]));
-    const lowSensor = entities.find(e => isLowSensor(e, hass.entities?.[e.entity_id]));
-    const buttonEntity = entities.find(e => isButtonEntity(e, hass.entities?.[e.entity_id]));
+    const typeSensor = entities.find(e => isTypeSensor(e, registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id]));
+    const plusSensor = entities.find(e => isPlusSensor(e, registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id]));
+    const replacedSensor = entities.find(e => isReplacedSensor(e, registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id]));
+    const lowSensor = entities.find(e => isLowSensor(e, registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id]));
+    const buttonEntity = entities.find(e => isButtonEntity(e, registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id]));
 
     const allAttrs: Record<string, any> = {};
     for (const e of entities) {
@@ -264,6 +308,15 @@ export function extractBatteryDevices(
       `sensor.${baseName}_batterie_stand`,
       `sensor.${baseName}`,
     ];
+    if (baseWithoutSub && baseWithoutSub !== baseName) {
+      candidates.push(
+        `sensor.${baseWithoutSub}_battery`,
+        `sensor.${baseWithoutSub}_batterie`,
+        `sensor.${baseWithoutSub}_battery_level`,
+        `sensor.${baseWithoutSub}_batteriestand`,
+        `sensor.${baseWithoutSub}`
+      );
+    }
     for (const c of candidates) {
       if (states[c]) {
         companionBatterySensor = states[c];
@@ -288,15 +341,12 @@ export function extractBatteryDevices(
       !isNaN(Number(allAttrs.battery_last_reported_level))
     ) {
       batteryLevel = Number(allAttrs.battery_last_reported_level);
-    } else if (deviceId && hass.entities) {
-      for (const [eId, r] of Object.entries(hass.entities)) {
-        if (
-          r.device_id === deviceId &&
-          eId.startsWith('sensor.') &&
-          !isTypeSensor(states[eId] || { entity_id: eId, state: '', attributes: {} }, r) &&
-          !isReplacedSensor(states[eId] || { entity_id: eId, state: '', attributes: {} }, r)
-        ) {
-          const st = states[eId];
+    } else if (deviceId) {
+      const entRegMap = registries?.entities;
+      for (const [eId, st] of Object.entries(states)) {
+        if (!eId.startsWith('sensor.')) continue;
+        const r = entRegMap?.get(eId) || hass.entities?.[eId];
+        if (r?.device_id === deviceId) {
           if (st && st.attributes?.device_class === 'battery' && !isNaN(parseFloat(st.state))) {
             batteryLevel = parseFloat(st.state);
             break;
@@ -305,24 +355,56 @@ export function extractBatteryDevices(
       }
     }
 
-    // Device Name resolution
+    // Device Registry check
+    const devReg = deviceId
+      ? registries?.devices?.get(deviceId) || hass.devices?.[deviceId]
+      : undefined;
+
+    const primaryAreaId =
+      devReg?.area_id ||
+      (primaryEntity
+        ? registries?.entities?.get(primaryEntity.entity_id)?.area_id ||
+          hass.entities?.[primaryEntity.entity_id]?.area_id
+        : undefined);
+
+    const areaName = primaryAreaId
+      ? registries?.areas?.get(primaryAreaId)?.name || hass.areas?.[primaryAreaId]?.name
+      : undefined;
+
     let name = '';
-    if (
-      deviceId &&
-      hass.devices?.[deviceId]?.name_by_user &&
-      !isGenericName(hass.devices[deviceId].name_by_user!)
-    ) {
-      name = hass.devices[deviceId].name_by_user!;
-    } else if (
-      deviceId &&
-      hass.devices?.[deviceId]?.name &&
-      !isGenericName(hass.devices[deviceId].name!)
-    ) {
-      name = hass.devices[deviceId].name!;
-    } else if (allAttrs.device_name && !isGenericName(allAttrs.device_name)) {
+
+    // 1. Manual override in card configuration
+    if (config.device_names) {
+      name =
+        config.device_names[baseName] ||
+        (deviceId ? config.device_names[deviceId] : '') ||
+        '';
+    }
+
+    // 2. Device Registry name_by_user (user-renamed device in HA)
+    if (!name && devReg?.name_by_user && !isGenericName(devReg.name_by_user)) {
+      name = devReg.name_by_user;
+    }
+
+    // 3. Device Registry default name
+    if (!name && devReg?.name && !isGenericName(devReg.name)) {
+      name = devReg.name;
+    }
+
+    // 4. device_name attribute from Battery Notes
+    if (!name && allAttrs.device_name && !isGenericName(allAttrs.device_name)) {
       name = allAttrs.device_name;
     }
 
+    // 5. Entity registry custom name
+    if (!name && primaryEntity) {
+      const entReg = registries?.entities?.get(primaryEntity.entity_id) || hass.entities?.[primaryEntity.entity_id];
+      if (entReg?.name && !isGenericName(entReg.name)) {
+        name = entReg.name;
+      }
+    }
+
+    // 6. Companion battery sensor friendly_name
     if (!name && companionBatterySensor?.attributes?.friendly_name) {
       const cleaned = cleanDeviceName(companionBatterySensor.attributes.friendly_name);
       if (cleaned && !isGenericName(cleaned)) {
@@ -330,6 +412,7 @@ export function extractBatteryDevices(
       }
     }
 
+    // 7. Group entities friendly_name
     if (!name) {
       for (const e of entities) {
         const rawFriendly = e.attributes?.friendly_name;
@@ -343,6 +426,7 @@ export function extractBatteryDevices(
       }
     }
 
+    // 8. source_entity_id friendly_name
     if (!name && allAttrs.source_entity_id && states[allAttrs.source_entity_id]?.attributes?.friendly_name) {
       const cleaned = cleanDeviceName(states[allAttrs.source_entity_id].attributes.friendly_name!);
       if (cleaned && !isGenericName(cleaned)) {
@@ -350,8 +434,39 @@ export function extractBatteryDevices(
       }
     }
 
+    // 9. Sibling entities with the same base prefix in hass.states (e.g. smoke alarm, status, etc.)
+    if (!name && baseName && !isGenericName(baseName)) {
+      const basePrefix = baseName.toLowerCase();
+      const baseNoSub = baseWithoutSub.toLowerCase();
+
+      for (const [sId, sEntity] of Object.entries(states)) {
+        if (!entities.some(e => e.entity_id === sId) && sEntity.attributes?.friendly_name) {
+          const sObjId = sId.includes('.') ? sId.split('.')[1].toLowerCase() : sId.toLowerCase();
+          if (sObjId.startsWith(basePrefix) || (baseNoSub.length >= 6 && sObjId.startsWith(baseNoSub))) {
+            const cleaned = cleanSiblingDeviceName(sEntity.attributes.friendly_name);
+            if (cleaned && !isGenericName(cleaned)) {
+              name = cleaned;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // 10. Combine with areaName if areaName is known
+    if (areaName) {
+      if (!name) {
+        name = `${areaName} Rauchmelder`;
+      } else if (!name.toLowerCase().includes(areaName.toLowerCase())) {
+        if (/^(?:smoke[_\-\s]*alarm|rauchmelder|sensor|alarm)$/i.test(name.trim())) {
+          name = `${areaName} ${name}`;
+        }
+      }
+    }
+
+    // 11. Format technical device name fallback (e.g. "Smoke Alarm 1")
     if (!name && !isGenericName(baseName)) {
-      name = baseName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      name = formatTechnicalDeviceName(baseName);
     }
 
     // Safety: If name is still generic (e.g. "Batterie-Typ" or empty), do NOT show it as a device!
@@ -402,6 +517,10 @@ export function extractBatteryDevices(
       buttonEntityId = `button.${baseName}_battery_replaced`;
     } else if (!buttonEntityId && states[`button.${baseName}_batterie_ersetzt`]) {
       buttonEntityId = `button.${baseName}_batterie_ersetzt`;
+    } else if (!buttonEntityId && baseWithoutSub && states[`button.${baseWithoutSub}_battery_replaced`]) {
+      buttonEntityId = `button.${baseWithoutSub}_battery_replaced`;
+    } else if (!buttonEntityId && baseWithoutSub && states[`button.${baseWithoutSub}_batterie_ersetzt`]) {
+      buttonEntityId = `button.${baseWithoutSub}_batterie_ersetzt`;
     }
 
     const isUnavailable =
@@ -413,6 +532,7 @@ export function extractBatteryDevices(
       sourceEntityId: allAttrs.source_entity_id,
       entityId: primaryEntity.entity_id,
       name,
+      area: areaName,
       batteryLevel,
       batteryType: bType,
       batteryQuantity: bQty,

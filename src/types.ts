@@ -33,9 +33,44 @@ export interface HomeAssistant {
     time_format?: string;
     date_format?: string;
   };
-  devices?: Record<string, { id: string; name?: string; name_by_user?: string | null; manufacturer?: string; model?: string }>;
-  entities?: Record<string, { entity_id: string; device_id?: string; name?: string; original_name?: string; translation_key?: string; platform?: string; [key: string]: any }>;
+  areas?: Record<string, { area_id: string; name: string }>;
+  devices?: Record<string, { id: string; name?: string; name_by_user?: string | null; area_id?: string | null; manufacturer?: string; model?: string }>;
+  entities?: Record<string, { entity_id: string; device_id?: string; area_id?: string | null; name?: string; original_name?: string; translation_key?: string; platform?: string; [key: string]: any }>;
+  connection?: {
+    sendMessagePromise: <T = any>(message: { type: string; [key: string]: any }) => Promise<T>;
+    [key: string]: any;
+  };
   callService: (domain: string, service: string, serviceData?: Record<string, any>) => Promise<any>;
+}
+
+export interface DeviceRegistryEntry {
+  id: string;
+  name?: string | null;
+  name_by_user?: string | null;
+  area_id?: string | null;
+  manufacturer?: string | null;
+  model?: string | null;
+}
+
+export interface EntityRegistryEntry {
+  entity_id: string;
+  device_id?: string | null;
+  area_id?: string | null;
+  name?: string | null;
+  original_name?: string | null;
+  platform?: string | null;
+  translation_key?: string | null;
+}
+
+export interface AreaRegistryEntry {
+  area_id: string;
+  name: string;
+}
+
+export interface HomeAssistantRegistries {
+  entities?: Map<string, EntityRegistryEntry>;
+  devices?: Map<string, DeviceRegistryEntry>;
+  areas?: Map<string, AreaRegistryEntry>;
 }
 
 export interface CardColumnsConfig {
@@ -75,6 +110,7 @@ export interface BatteryNotesCardConfig {
   compact?: boolean;
   confirm_replace?: boolean;
   max_rows?: number;
+  device_names?: Record<string, string>;
 }
 
 export interface BatteryDeviceItem {
@@ -83,6 +119,7 @@ export interface BatteryDeviceItem {
   sourceEntityId?: string;
   entityId: string;
   name: string;
+  area?: string;
   batteryLevel: number | null;
   batteryType: string;
   batteryQuantity: number;

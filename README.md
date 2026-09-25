@@ -1,6 +1,5 @@
 # 🔋 Battery Notes Card
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=vitals5&repository=battery-notes-card&category=plugin)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/default)
 [![GitHub release](https://img.shields.io/github/v/release/vitals5/battery-notes-card?style=for-the-badge)](https://github.com/vitals5/battery-notes-card/releases)
 [![License](https://img.shields.io/github/license/vitals5/battery-notes-card?style=for-the-badge)](LICENSE)

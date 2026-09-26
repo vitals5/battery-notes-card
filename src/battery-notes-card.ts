@@ -10,7 +10,7 @@ import {
 import { cardStyles } from './styles';
 import { localize } from './localize';
 import { BatteryNotesCardEditor } from './battery-notes-card-editor';
-import { extractBatteryDevices } from './device-extractor.ts';
+import { extractBatteryDevices, computePagination } from './device-extractor.ts';
 
 // Register editor element
 if (!customElements.get('battery-notes-card-editor')) {
@@ -25,6 +25,7 @@ export class BatteryNotesCard extends LitElement {
   @state() private _sortBy: 'battery' | 'name' | 'type' | 'last_replaced' | 'status' = 'battery';
   @state() private _sortDirection: 'asc' | 'desc' = 'asc';
   @state() private _recentlyReplaced = new Set<string>();
+  @state() private _displayedRows = 0;
 
   private _registriesLoaded = false;
   private _registries: HomeAssistantRegistries = {};
@@ -94,6 +95,11 @@ export class BatteryNotesCard extends LitElement {
     }
     if (this._config.filter_low_only) {
       this._activeFilter = 'low';
+    }
+    if (this._config.initial_rows && this._config.initial_rows > 0) {
+      this._displayedRows = this._config.initial_rows;
+    } else {
+      this._displayedRows = 0;
     }
   }
 
@@ -244,6 +250,24 @@ export class BatteryNotesCard extends LitElement {
     }
   }
 
+  private _handleShowMore(step: number): void {
+    const initialRows = this._config.initial_rows && this._config.initial_rows > 0
+      ? this._config.initial_rows
+      : 10;
+    const current = this._displayedRows > 0 ? this._displayedRows : initialRows;
+    this._displayedRows = current + step;
+  }
+
+  private _handleShowLess(): void {
+    this._displayedRows = this._config.initial_rows && this._config.initial_rows > 0
+      ? this._config.initial_rows
+      : 0;
+  }
+
+  private _handleShowAll(total: number): void {
+    this._displayedRows = total;
+  }
+
   protected render(): TemplateResult {
     if (!this.hass) {
       return html``;
@@ -312,9 +336,16 @@ export class BatteryNotesCard extends LitElement {
     });
 
     // Pagination / Max rows
-    if (this._config.max_rows && this._config.max_rows > 0) {
-      filtered = filtered.slice(0, this._config.max_rows);
-    }
+    const totalMatching = filtered.length;
+    const pagination = computePagination(
+      totalMatching,
+      this._displayedRows,
+      this._config.initial_rows,
+      this._config.step_rows,
+      this._config.max_rows
+    );
+
+    const visibleItems = filtered.slice(0, pagination.effectiveLimit);
 
     const cols = {
       name: true,
@@ -380,14 +411,23 @@ export class BatteryNotesCard extends LitElement {
                             class="search-input"
                             .value=${this._searchQuery}
                             placeholder=${localize('search_placeholder', lang)}
-                            @input=${(e: InputEvent) =>
-                              (this._searchQuery = (e.target as HTMLInputElement).value)}
+                            @input=${(e: InputEvent) => {
+                              this._searchQuery = (e.target as HTMLInputElement).value;
+                              if (this._config.initial_rows && this._config.initial_rows > 0) {
+                                this._displayedRows = this._config.initial_rows;
+                              }
+                            }}
                           />
                           ${this._searchQuery
                             ? html`
                                 <button
                                   class="search-clear-btn"
-                                  @click=${() => (this._searchQuery = '')}
+                                  @click=${() => {
+                                    this._searchQuery = '';
+                                    if (this._config.initial_rows && this._config.initial_rows > 0) {
+                                      this._displayedRows = this._config.initial_rows;
+                                    }
+                                  }}
                                 >
                                   <ha-icon icon="mdi:close-circle"></ha-icon>
                                 </button>
@@ -401,19 +441,34 @@ export class BatteryNotesCard extends LitElement {
                         <div class="filter-pills">
                           <button
                             class="filter-btn ${this._activeFilter === 'all' ? 'active' : ''}"
-                            @click=${() => (this._activeFilter = 'all')}
+                            @click=${() => {
+                              this._activeFilter = 'all';
+                              if (this._config.initial_rows && this._config.initial_rows > 0) {
+                                this._displayedRows = this._config.initial_rows;
+                              }
+                            }}
                           >
                             ${localize('filter_all', lang)}
                           </button>
                           <button
                             class="filter-btn ${this._activeFilter === 'low' ? 'active' : ''}"
-                            @click=${() => (this._activeFilter = 'low')}
+                            @click=${() => {
+                              this._activeFilter = 'low';
+                              if (this._config.initial_rows && this._config.initial_rows > 0) {
+                                this._displayedRows = this._config.initial_rows;
+                              }
+                            }}
                           >
                             ${localize('filter_low', lang)} ${lowCount > 0 ? `(${lowCount})` : ''}
                           </button>
                           <button
                             class="filter-btn ${this._activeFilter === 'critical' ? 'active' : ''}"
-                            @click=${() => (this._activeFilter = 'critical')}
+                            @click=${() => {
+                              this._activeFilter = 'critical';
+                              if (this._config.initial_rows && this._config.initial_rows > 0) {
+                                this._displayedRows = this._config.initial_rows;
+                              }
+                            }}
                           >
                             ${localize('filter_critical', lang)}
                           </button>
@@ -425,7 +480,7 @@ export class BatteryNotesCard extends LitElement {
             : ''}
 
           <!-- Table Content -->
-          ${filtered.length > 0
+          ${visibleItems.length > 0
             ? html`
                 <div class="table-wrapper">
                   <table class="battery-table">
@@ -539,7 +594,7 @@ export class BatteryNotesCard extends LitElement {
                       </tr>
                     </thead>
                     <tbody>
-                      ${filtered.map(item => {
+                      ${visibleItems.map(item => {
                         const levelClass = this._getLevelClass(item.batteryLevel);
                         const isRecentlyReplaced = this._recentlyReplaced.has(item.id);
 
@@ -684,6 +739,55 @@ export class BatteryNotesCard extends LitElement {
                     </tbody>
                   </table>
                 </div>
+
+                ${pagination.canShowMore || pagination.canShowLess
+                  ? html`
+                      <div class="pagination-container">
+                        ${pagination.canShowMore
+                          ? html`
+                              <button
+                                class="pagination-btn primary"
+                                @click=${() => this._handleShowMore(pagination.nextStep)}
+                              >
+                                <ha-icon icon="mdi:chevron-down"></ha-icon>
+                                <span>
+                                  ${localize('show_more_remaining', lang, {
+                                    count: pagination.nextStep,
+                                    remaining: pagination.remainingCount,
+                                  })}
+                                </span>
+                              </button>
+                            `
+                          : ''}
+                        ${pagination.canShowMore && pagination.remainingCount > pagination.nextStep
+                          ? html`
+                              <button
+                                class="pagination-btn secondary"
+                                @click=${() => this._handleShowAll(totalMatching)}
+                              >
+                                <ha-icon icon="mdi:unfold-more-horizontal"></ha-icon>
+                                <span>
+                                  ${localize('show_all', lang, {
+                                    count: totalMatching,
+                                  })}
+                                </span>
+                              </button>
+                            `
+                          : ''}
+                        ${pagination.canShowLess
+                          ? html`
+                              <button
+                                class="pagination-btn secondary"
+                                @click=${this._handleShowLess}
+                              >
+                                <ha-icon icon="mdi:chevron-up"></ha-icon>
+                                <span>${localize('show_less', lang)}</span>
+                              </button>
+                            `
+                          : ''}
+                      </div>
+                    `
+                  : ''}
               `
             : html`
                 <div class="empty-state">

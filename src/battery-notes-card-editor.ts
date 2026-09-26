@@ -19,6 +19,8 @@ export class BatteryNotesCardEditor extends LitElement {
 
     if (target.type === 'checkbox' || target.checked !== undefined) {
       value = target.checked;
+    } else if (target.type === 'number') {
+      value = target.value === '' ? undefined : Number(target.value);
     } else if (target.value !== undefined) {
       value = target.value;
     }
@@ -39,7 +41,12 @@ export class BatteryNotesCardEditor extends LitElement {
       };
       newConfig = { ...this._config, columns };
     } else {
-      newConfig = { ...this._config, [key]: value };
+      newConfig = { ...this._config };
+      if (value === undefined || value === '') {
+        delete (newConfig as any)[key];
+      } else {
+        (newConfig as any)[key] = value;
+      }
     }
 
     this._config = newConfig;
@@ -121,6 +128,33 @@ export class BatteryNotesCardEditor extends LitElement {
               <option value="asc">Ascending (0% -> 100% / A -> Z)</option>
               <option value="desc">Descending (100% -> 0% / Z -> A)</option>
             </select>
+          </div>
+        </div>
+
+        <!-- Row Limits & Pagination -->
+        <div class="config-row two-col">
+          <div>
+            <label class="label">${localize('editor_initial_rows', lang)}</label>
+            <input
+              type="number"
+              min="1"
+              class="input-text"
+              .value=${this._config.initial_rows ?? ''}
+              placeholder="All"
+              @input=${(e: Event) => this._valueChanged(e, 'initial_rows')}
+            />
+          </div>
+
+          <div>
+            <label class="label">${localize('editor_step_rows', lang)}</label>
+            <input
+              type="number"
+              min="1"
+              class="input-text"
+              .value=${this._config.step_rows ?? ''}
+              placeholder="Same as initial"
+              @input=${(e: Event) => this._valueChanged(e, 'step_rows')}
+            />
           </div>
         </div>
 

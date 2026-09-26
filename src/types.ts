@@ -109,6 +109,8 @@ export interface BatteryNotesCardConfig {
   show_filters?: boolean;
   compact?: boolean;
   confirm_replace?: boolean;
+  initial_rows?: number;
+  step_rows?: number;
   max_rows?: number;
   device_names?: Record<string, string>;
 }

@@ -584,3 +584,47 @@ export function extractBatteryDevices(
 
   return result;
 }
+
+export interface PaginationState {
+  effectiveLimit: number;
+  remainingCount: number;
+  nextStep: number;
+  canShowMore: boolean;
+  canShowLess: boolean;
+}
+
+export function computePagination(
+  totalMatching: number,
+  displayedRows: number,
+  initialRows?: number,
+  stepRows?: number,
+  maxRows?: number
+): PaginationState {
+  const init = initialRows && initialRows > 0 ? initialRows : 0;
+  const step = stepRows && stepRows > 0 ? stepRows : (init > 0 ? init : 10);
+
+  let effectiveLimit = totalMatching;
+  if (init > 0) {
+    effectiveLimit = displayedRows > 0 ? displayedRows : init;
+  }
+
+  if (maxRows && maxRows > 0) {
+    effectiveLimit = Math.min(effectiveLimit, maxRows);
+  }
+
+  effectiveLimit = Math.min(totalMatching, effectiveLimit);
+
+  const visibleCount = effectiveLimit;
+  const remainingCount = Math.max(0, totalMatching - visibleCount);
+  const nextStep = Math.min(step, remainingCount);
+  const canShowMore = remainingCount > 0 && (!maxRows || visibleCount < maxRows);
+  const canShowLess = init > 0 && visibleCount > init;
+
+  return {
+    effectiveLimit,
+    remainingCount,
+    nextStep,
+    canShowMore,
+    canShowLess,
+  };
+}

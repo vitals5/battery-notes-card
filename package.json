@@ -1,6 +1,6 @@
 {
   "name": "battery-notes-card",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Home Assistant Dashboard Lovelace card companion for Battery Notes integration",
   "type": "module",
   "main": "dist/battery-notes-card.js",

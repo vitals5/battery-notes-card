@@ -54,6 +54,12 @@ const languages: Record<string, Record<string, string>> = {
     editor_col_status: 'Status Badge',
     editor_col_note: 'Note',
     editor_col_actions: 'Action Button',
+    show_more: 'Show {count} more',
+    show_more_remaining: 'Show {count} more ({remaining} remaining)',
+    show_less: 'Show less',
+    show_all: 'Show all ({count})',
+    editor_initial_rows: 'Initial rows to show',
+    editor_step_rows: 'Rows to add per click',
   },
   de: {
     card_title: 'Batteriestände',
@@ -110,6 +116,12 @@ const languages: Record<string, Record<string, string>> = {
     editor_col_status: 'Status',
     editor_col_note: 'Notiz',
     editor_col_actions: 'Aktions-Button',
+    show_more: 'Weitere {count} anzeigen',
+    show_more_remaining: 'Weitere {count} anzeigen (noch {remaining})',
+    show_less: 'Weniger anzeigen',
+    show_all: 'Alle anzeigen ({count})',
+    editor_initial_rows: 'Anzahl Zeilen am Anfang',
+    editor_step_rows: 'Weitere Zeilen pro Klick',
   },
 };
 

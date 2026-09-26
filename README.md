@@ -55,7 +55,7 @@ Click the badge below to open the repository directly in HACS on your Home Assis
 1. Download the `battery-notes-card.js` file from the [Releases](https://github.com/vitals5/battery-notes-card/releases) page or the `dist/` directory.
 2. Copy the file to your Home Assistant configuration directory under `config/www/battery-notes-card.js`.
 3. In Home Assistant, navigate to **Settings** ➔ **Dashboards** ➔ **Resources** (three-dots menu in the top right) and add a new resource:
-   - **URL:** `/local/battery-notes-card.js?v=1.0.6`
+   - **URL:** `/local/battery-notes-card.js?v=1.0.7`
    - **Resource Type:** `JavaScript Module`
 4. Refresh your dashboard.
 
@@ -107,7 +107,15 @@ columns:
   actions: true
 ```
 
-#### 4. Full Configuration Example
+#### 4. Incremental Loading / Pagination (Show more button)
+```yaml
+type: custom:battery-notes-card
+title: Battery Levels
+initial_rows: 10
+step_rows: 10
+```
+
+#### 5. Full Configuration Example
 ```yaml
 type: custom:battery-notes-card
 title: All Batteries & Notes
@@ -122,7 +130,9 @@ sort_by: battery
 sort_direction: asc
 filter_threshold: 20
 hide_unavailable: false
-max_rows: 25
+initial_rows: 10
+step_rows: 10
+max_rows: 50
 exclude_entities:
   - sensor.test_sensor_battery_type
 columns:
@@ -155,7 +165,9 @@ columns:
 | `filter_low_only`| boolean | `false` | Only show devices with low battery |
 | `filter_threshold`| number | `20` | Threshold percentage for "Low Battery" status |
 | `hide_unavailable`| boolean | `false` | Hide unavailable entities from the table |
-| `max_rows` | number | - | Maximum number of rows to display |
+| `initial_rows` | number | - | Number of rows displayed on initial load (reveals "Show more" button) |
+| `step_rows` | number | *(same as initial)* | Number of additional rows to reveal per "Show more" click |
+| `max_rows` | number | - | Maximum total number of rows to display |
 | `exclude_entities`| list | `[]` | List of entities or device IDs to ignore |
 | `device_names` | map | `{}` | Custom device name overrides (e.g. `dev_id: "Custom Name"`) |
 | `columns` | object | *(see below)* | Controls column visibility |

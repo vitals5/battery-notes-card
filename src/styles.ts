@@ -515,4 +515,57 @@ export const cardStyles = css`
   .compact .battery-bar-container {
     height: 4px;
   }
+
+  /* Pagination / Show more */
+  .pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 0 2px 0;
+  }
+
+  .pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--divider-color, rgba(127, 127, 127, 0.25));
+    background: var(--secondary-background-color, rgba(127, 127, 127, 0.08));
+    color: var(--primary-text-color);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .pagination-btn ha-icon {
+    --mdc-icon-size: 18px;
+  }
+
+  .pagination-btn:hover {
+    background: var(--primary-color);
+    color: var(--text-primary-color, #ffffff);
+    border-color: var(--primary-color);
+  }
+
+  .pagination-btn.secondary {
+    background: transparent;
+    border-color: transparent;
+    color: var(--secondary-text-color);
+  }
+
+  .pagination-btn.secondary:hover {
+    background: rgba(127, 127, 127, 0.15);
+    color: var(--primary-text-color);
+    border-color: transparent;
+  }
+
+  .compact .pagination-btn {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+  }
 `;

@@ -5,6 +5,7 @@ import {
   cleanDeviceName,
   isGenericName,
   getBaseName,
+  computePagination,
 } from '../src/device-extractor.ts';
 import type { HomeAssistant, BatteryNotesCardConfig, HomeAssistantRegistries } from '../src/types.ts';
 
@@ -601,6 +602,69 @@ describe('Device Extractor Unit Tests', () => {
       assert.strictEqual(dev.batteryTypeAndQuantity, 'CR123A');
       assert.strictEqual(dev.isLow, false);
       assert.strictEqual(dev.buttonEntityId, 'button.smoke_alarm_sbs50148a0d90_00000001_battery_replaced');
+    });
+  });
+
+  describe('Pagination & Row Limits (computePagination)', () => {
+    it('When initial_rows is not set (undefined or 0), all rows are displayed and pagination buttons are hidden', () => {
+      const res = computePagination(47, 0, undefined, undefined, undefined);
+      assert.strictEqual(res.effectiveLimit, 47);
+      assert.strictEqual(res.remainingCount, 0);
+      assert.strictEqual(res.canShowMore, false);
+      assert.strictEqual(res.canShowLess, false);
+    });
+
+    it('When initial_rows is set and total matching <= initial_rows, all rows are displayed and show more is hidden', () => {
+      const res = computePagination(8, 0, 10, undefined, undefined);
+      assert.strictEqual(res.effectiveLimit, 8);
+      assert.strictEqual(res.remainingCount, 0);
+      assert.strictEqual(res.canShowMore, false);
+      assert.strictEqual(res.canShowLess, false);
+    });
+
+    it('When total matching > initial_rows, only initial_rows are shown and canShowMore is true', () => {
+      const res = computePagination(47, 0, 10, undefined, undefined);
+      assert.strictEqual(res.effectiveLimit, 10);
+      assert.strictEqual(res.remainingCount, 37);
+      assert.strictEqual(res.nextStep, 10);
+      assert.strictEqual(res.canShowMore, true);
+      assert.strictEqual(res.canShowLess, false);
+    });
+
+    it('Clicking show more increments effectiveLimit by step_rows (or initial_rows by default)', () => {
+      // User clicked "Show more" once -> displayedRows becomes 20
+      const res = computePagination(47, 20, 10, undefined, undefined);
+      assert.strictEqual(res.effectiveLimit, 20);
+      assert.strictEqual(res.remainingCount, 27);
+      assert.strictEqual(res.nextStep, 10);
+      assert.strictEqual(res.canShowMore, true);
+      assert.strictEqual(res.canShowLess, true);
+    });
+
+    it('When all items have been expanded, canShowMore is false and canShowLess is true', () => {
+      // User expanded all 47 rows -> displayedRows = 50
+      const res = computePagination(47, 50, 10, undefined, undefined);
+      assert.strictEqual(res.effectiveLimit, 47);
+      assert.strictEqual(res.remainingCount, 0);
+      assert.strictEqual(res.nextStep, 0);
+      assert.strictEqual(res.canShowMore, false);
+      assert.strictEqual(res.canShowLess, true);
+    });
+
+    it('When max_rows is set, effectiveLimit is capped at max_rows and cannot expand beyond it', () => {
+      // initial_rows = 10, max_rows = 25, displayedRows = 30
+      const res = computePagination(50, 30, 10, undefined, 25);
+      assert.strictEqual(res.effectiveLimit, 25);
+      assert.strictEqual(res.canShowMore, false);
+    });
+
+    it('Custom step_rows controls the increment size per click', () => {
+      // initial_rows = 5, step_rows = 15, displayedRows = 0
+      const res = computePagination(50, 0, 5, 15, undefined);
+      assert.strictEqual(res.effectiveLimit, 5);
+      assert.strictEqual(res.remainingCount, 45);
+      assert.strictEqual(res.nextStep, 15);
+      assert.strictEqual(res.canShowMore, true);
     });
   });
 });

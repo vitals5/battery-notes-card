@@ -28,7 +28,5 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist/battery-notes-card.js
-            battery-notes-card.js
+          files: dist/battery-notes-card.js
           generate_release_notes: true

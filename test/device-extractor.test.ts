@@ -6,6 +6,8 @@ import {
   isGenericName,
   getBaseName,
   computePagination,
+  sanitizeCardConfig,
+  parseEditorValue,
 } from '../src/device-extractor.ts';
 import type { HomeAssistant, BatteryNotesCardConfig, HomeAssistantRegistries } from '../src/types.ts';
 
@@ -666,6 +668,67 @@ describe('Device Extractor Unit Tests', () => {
       assert.strictEqual(res.nextStep, 15);
       assert.strictEqual(res.canShowMore, true);
     });
+
+    it('Defensively rejects boolean false for initial_rows and step_rows', () => {
+      const res = computePagination(30, 0, false as any, false as any, undefined);
+      assert.strictEqual(res.effectiveLimit, 30);
+      assert.strictEqual(res.remainingCount, 0);
+      assert.strictEqual(res.canShowMore, false);
+    });
+  });
+
+  describe('Editor Input Parsing & Configuration Sanitization', () => {
+    it('parseEditorValue correctly extracts numbers even when checked=false is present on the input', () => {
+      // In all browsers, HTMLInputElement has checked=false by default on text/number inputs
+      const numberInput = { type: 'number', checked: false, value: '15' };
+      const parsed = parseEditorValue(numberInput);
+      assert.strictEqual(parsed, 15);
+    });
+
+    it('parseEditorValue returns undefined when number input is empty or <= 0', () => {
+      assert.strictEqual(parseEditorValue({ type: 'number', checked: false, value: '' }), undefined);
+      assert.strictEqual(parseEditorValue({ type: 'number', checked: false, value: '0' }), undefined);
+      assert.strictEqual(parseEditorValue({ type: 'number', checked: false, value: '-5' }), undefined);
+    });
+
+    it('parseEditorValue correctly extracts text and does not return false', () => {
+      const textInput = { type: 'text', checked: false, value: 'My Batteries' };
+      assert.strictEqual(parseEditorValue(textInput), 'My Batteries');
+    });
+
+    it('parseEditorValue handles checkboxes accurately', () => {
+      assert.strictEqual(parseEditorValue({ type: 'checkbox', checked: true }), true);
+      assert.strictEqual(parseEditorValue({ type: 'checkbox', checked: false }), false);
+    });
+
+    it('sanitizeCardConfig strips boolean false or invalid values from initial_rows and step_rows', () => {
+      const corruptConfig: any = {
+        type: 'custom:battery-notes-card',
+        title: false,
+        icon: false,
+        initial_rows: false,
+        step_rows: false,
+      };
+
+      const cleaned = sanitizeCardConfig(corruptConfig);
+      assert.strictEqual(cleaned.initial_rows, undefined);
+      assert.strictEqual(cleaned.step_rows, undefined);
+      assert.strictEqual(cleaned.title, undefined);
+      assert.strictEqual(cleaned.icon, undefined);
+    });
+
+    it('sanitizeCardConfig converts valid numeric strings to integers', () => {
+      const stringConfig: any = {
+        type: 'custom:battery-notes-card',
+        initial_rows: '10',
+        step_rows: '5',
+      };
+
+      const cleaned = sanitizeCardConfig(stringConfig);
+      assert.strictEqual(cleaned.initial_rows, 10);
+      assert.strictEqual(cleaned.step_rows, 5);
+    });
   });
 });
+
 

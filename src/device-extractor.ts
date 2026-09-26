@@ -600,8 +600,11 @@ export function computePagination(
   stepRows?: number,
   maxRows?: number
 ): PaginationState {
-  const init = initialRows && initialRows > 0 ? initialRows : 0;
-  const step = stepRows && stepRows > 0 ? stepRows : (init > 0 ? init : 10);
+  const numInit = typeof initialRows === 'number' ? initialRows : Number(initialRows);
+  const init = !isNaN(numInit) && numInit > 0 && typeof initialRows !== 'boolean' ? Math.floor(numInit) : 0;
+
+  const numStep = typeof stepRows === 'number' ? stepRows : Number(stepRows);
+  const step = !isNaN(numStep) && numStep > 0 && typeof stepRows !== 'boolean' ? Math.floor(numStep) : (init > 0 ? init : 10);
 
   let effectiveLimit = totalMatching;
   if (init > 0) {
@@ -628,3 +631,63 @@ export function computePagination(
     canShowLess,
   };
 }
+
+export function sanitizeCardConfig(config: BatteryNotesCardConfig): BatteryNotesCardConfig {
+  const cleanConfig: BatteryNotesCardConfig = { ...config };
+
+  if (cleanConfig.initial_rows !== undefined) {
+    const num = Number(cleanConfig.initial_rows);
+    if (typeof cleanConfig.initial_rows === 'boolean' || isNaN(num) || num <= 0) {
+      delete cleanConfig.initial_rows;
+    } else {
+      cleanConfig.initial_rows = Math.floor(num);
+    }
+  }
+
+  if (cleanConfig.step_rows !== undefined) {
+    const num = Number(cleanConfig.step_rows);
+    if (typeof cleanConfig.step_rows === 'boolean' || isNaN(num) || num <= 0) {
+      delete cleanConfig.step_rows;
+    } else {
+      cleanConfig.step_rows = Math.floor(num);
+    }
+  }
+
+  if (cleanConfig.title !== undefined && typeof cleanConfig.title !== 'string') {
+    delete cleanConfig.title;
+  }
+
+  if (cleanConfig.icon !== undefined && typeof cleanConfig.icon !== 'string') {
+    delete cleanConfig.icon;
+  }
+
+  return cleanConfig;
+}
+
+export function parseEditorValue(target: {
+  type?: string;
+  tagName?: string;
+  checked?: boolean;
+  value?: string;
+}): any {
+  if (target.type === 'checkbox') {
+    return Boolean(target.checked);
+  }
+  if (target.tagName === 'HA-SWITCH' || target.tagName === 'HA-CHECKBOX') {
+    return Boolean(target.checked);
+  }
+  if (target.type === 'number') {
+    const raw = target.value;
+    if (raw === '' || raw === null || raw === undefined) {
+      return undefined;
+    }
+    const parsed = Number(raw);
+    return isNaN(parsed) || parsed <= 0 ? undefined : Math.floor(parsed);
+  }
+  const val = target.value;
+  if (typeof val === 'string' && val.trim() === '') {
+    return undefined;
+  }
+  return val;
+}
+

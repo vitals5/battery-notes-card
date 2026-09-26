@@ -2,28 +2,21 @@ import { LitElement, html, css, TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { HomeAssistant, BatteryNotesCardConfig, CardColumnsConfig } from './types';
 import { localize } from './localize';
+import { sanitizeCardConfig, parseEditorValue } from './device-extractor';
 
 export class BatteryNotesCardEditor extends LitElement {
   @property({ attribute: false }) public hass?: HomeAssistant;
   @state() private _config?: BatteryNotesCardConfig;
 
   public setConfig(config: BatteryNotesCardConfig): void {
-    this._config = { ...config };
+    this._config = sanitizeCardConfig(config);
   }
 
   private _valueChanged(ev: CustomEvent | Event, key: string, isColumn = false): void {
     if (!this._config) return;
 
     const target = ev.target as any;
-    let value: any;
-
-    if (target.type === 'checkbox' || target.checked !== undefined) {
-      value = target.checked;
-    } else if (target.type === 'number') {
-      value = target.value === '' ? undefined : Number(target.value);
-    } else if (target.value !== undefined) {
-      value = target.value;
-    }
+    const value = parseEditorValue(target);
 
     let newConfig: BatteryNotesCardConfig;
 
@@ -42,11 +35,15 @@ export class BatteryNotesCardEditor extends LitElement {
       newConfig = { ...this._config, columns };
     } else {
       newConfig = { ...this._config };
-      if (value === undefined || value === '') {
+      if (value === undefined) {
         delete (newConfig as any)[key];
       } else {
         (newConfig as any)[key] = value;
       }
+    }
+
+    if (!newConfig.type) {
+      newConfig.type = 'custom:battery-notes-card';
     }
 
     this._config = newConfig;
@@ -84,9 +81,10 @@ export class BatteryNotesCardEditor extends LitElement {
           <input
             type="text"
             class="input-text"
-            .value=${this._config.title ?? ''}
+            .value=${typeof this._config.title === 'string' ? this._config.title : ''}
             placeholder=${localize('card_title', lang)}
             @input=${(e: Event) => this._valueChanged(e, 'title')}
+            @change=${(e: Event) => this._valueChanged(e, 'title')}
           />
         </div>
 
@@ -95,9 +93,10 @@ export class BatteryNotesCardEditor extends LitElement {
           <input
             type="text"
             class="input-text"
-            .value=${this._config.icon ?? 'mdi:battery-heart-variant'}
+            .value=${typeof this._config.icon === 'string' ? this._config.icon : 'mdi:battery-heart-variant'}
             placeholder="mdi:battery-heart-variant"
             @input=${(e: Event) => this._valueChanged(e, 'icon')}
+            @change=${(e: Event) => this._valueChanged(e, 'icon')}
           />
         </div>
 
@@ -139,9 +138,10 @@ export class BatteryNotesCardEditor extends LitElement {
               type="number"
               min="1"
               class="input-text"
-              .value=${this._config.initial_rows ?? ''}
+              .value=${typeof this._config.initial_rows === 'number' ? String(this._config.initial_rows) : ''}
               placeholder="All"
               @input=${(e: Event) => this._valueChanged(e, 'initial_rows')}
+              @change=${(e: Event) => this._valueChanged(e, 'initial_rows')}
             />
           </div>
 
@@ -151,9 +151,10 @@ export class BatteryNotesCardEditor extends LitElement {
               type="number"
               min="1"
               class="input-text"
-              .value=${this._config.step_rows ?? ''}
+              .value=${typeof this._config.step_rows === 'number' ? String(this._config.step_rows) : ''}
               placeholder="Same as initial"
               @input=${(e: Event) => this._valueChanged(e, 'step_rows')}
+              @change=${(e: Event) => this._valueChanged(e, 'step_rows')}
             />
           </div>
         </div>

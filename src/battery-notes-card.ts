@@ -10,7 +10,7 @@ import {
 import { cardStyles } from './styles';
 import { localize } from './localize';
 import { BatteryNotesCardEditor } from './battery-notes-card-editor';
-import { extractBatteryDevices, computePagination } from './device-extractor.ts';
+import { extractBatteryDevices, computePagination, sanitizeCardConfig } from './device-extractor.ts';
 
 // Register editor element
 if (!customElements.get('battery-notes-card-editor')) {
@@ -63,6 +63,7 @@ export class BatteryNotesCard extends LitElement {
     if (!config) {
       throw new Error('Invalid configuration');
     }
+    const cleanConfig = sanitizeCardConfig(config);
     this._config = {
       title: 'Battery Notes',
       icon: 'mdi:battery-heart-variant',
@@ -74,7 +75,7 @@ export class BatteryNotesCard extends LitElement {
       confirm_replace: true,
       sort_by: 'battery',
       sort_direction: 'asc',
-      ...config,
+      ...cleanConfig,
       columns: {
         name: true,
         battery: true,
@@ -83,7 +84,7 @@ export class BatteryNotesCard extends LitElement {
         status: true,
         note: false,
         actions: true,
-        ...(config.columns || {}),
+        ...(cleanConfig.columns || {}),
       },
     };
 

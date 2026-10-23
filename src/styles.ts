@@ -261,6 +261,12 @@ export const cardStyles = css`
     text-align: center;
   }
 
+  .col-area-th,
+  .col-area-td {
+    min-width: 100px;
+    text-align: left;
+  }
+
   .col-note-th,
   .col-note-td {
     min-width: 100px;
@@ -306,6 +312,18 @@ export const cardStyles = css`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .device-area {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .area-icon {
+    --mdc-icon-size: 13px;
+    color: var(--secondary-text-color);
+    flex-shrink: 0;
   }
 
   /* Battery level bar and percent */
@@ -398,6 +416,33 @@ export const cardStyles = css`
   .type-badge ha-icon {
     --mdc-icon-size: 14px;
     color: var(--secondary-text-color);
+  }
+
+  /* Area Badge */
+  .area-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--secondary-background-color, rgba(127, 127, 127, 0.12));
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--primary-text-color);
+    white-space: nowrap;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .area-badge-icon {
+    --mdc-icon-size: 14px;
+    color: var(--secondary-text-color);
+    flex-shrink: 0;
+  }
+
+  .area-empty {
+    color: var(--disabled-text-color, #9e9e9e);
   }
 
   /* Last Replaced cell */

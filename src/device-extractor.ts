@@ -390,20 +390,78 @@ export function extractBatteryDevices(
     }
 
     // Device Registry check
-    const devReg = deviceId
-      ? registries?.devices?.get(deviceId) || hass.devices?.[deviceId]
+    let resolvedDeviceId = deviceId;
+    if (!resolvedDeviceId) {
+      for (const e of entities) {
+        const entReg = registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id];
+        if (entReg?.device_id) {
+          resolvedDeviceId = entReg.device_id;
+          break;
+        }
+      }
+    }
+    if (!resolvedDeviceId && allAttrs.source_entity_id) {
+      const srcReg = registries?.entities?.get(allAttrs.source_entity_id) || hass.entities?.[allAttrs.source_entity_id];
+      if (srcReg?.device_id) {
+        resolvedDeviceId = srcReg.device_id;
+      }
+    }
+    if (!resolvedDeviceId && companionBatterySensor) {
+      const compReg = registries?.entities?.get(companionBatterySensor.entity_id) || hass.entities?.[companionBatterySensor.entity_id];
+      if (compReg?.device_id) {
+        resolvedDeviceId = compReg.device_id;
+      }
+    }
+
+    const devReg = resolvedDeviceId
+      ? registries?.devices?.get(resolvedDeviceId) || hass.devices?.[resolvedDeviceId]
       : undefined;
 
-    const primaryAreaId =
-      devReg?.area_id ||
-      (primaryEntity
-        ? registries?.entities?.get(primaryEntity.entity_id)?.area_id ||
-          hass.entities?.[primaryEntity.entity_id]?.area_id
-        : undefined);
+    // Home Assistant entity area_id explicitly overrides device area_id if set
+    let primaryAreaId: string | undefined;
 
-    const areaName = primaryAreaId
+    if (primaryEntity) {
+      const entReg = registries?.entities?.get(primaryEntity.entity_id) || hass.entities?.[primaryEntity.entity_id];
+      if (entReg?.area_id) {
+        primaryAreaId = entReg.area_id;
+      }
+    }
+
+    if (!primaryAreaId) {
+      for (const e of entities) {
+        const entReg = registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id];
+        if (entReg?.area_id) {
+          primaryAreaId = entReg.area_id;
+          break;
+        }
+      }
+    }
+
+    if (!primaryAreaId) {
+      primaryAreaId = devReg?.area_id || undefined;
+    }
+
+    if (!primaryAreaId && allAttrs.source_entity_id) {
+      const srcReg = registries?.entities?.get(allAttrs.source_entity_id) || hass.entities?.[allAttrs.source_entity_id];
+      if (srcReg?.area_id) {
+        primaryAreaId = srcReg.area_id;
+      }
+    }
+
+    if (!primaryAreaId && companionBatterySensor) {
+      const compReg = registries?.entities?.get(companionBatterySensor.entity_id) || hass.entities?.[companionBatterySensor.entity_id];
+      if (compReg?.area_id) {
+        primaryAreaId = compReg.area_id;
+      }
+    }
+
+    let areaName = primaryAreaId
       ? registries?.areas?.get(primaryAreaId)?.name || hass.areas?.[primaryAreaId]?.name
       : undefined;
+
+    if (!areaName && (allAttrs.area || allAttrs.area_name)) {
+      areaName = allAttrs.area_name || allAttrs.area;
+    }
 
     let name = '';
 
@@ -562,7 +620,7 @@ export function extractBatteryDevices(
 
     result.push({
       id: group.id,
-      deviceId,
+      deviceId: resolvedDeviceId || deviceId,
       sourceEntityId: allAttrs.source_entity_id,
       entityId: primaryEntity.entity_id,
       name,
@@ -659,6 +717,21 @@ export function sanitizeCardConfig(config: BatteryNotesCardConfig): BatteryNotes
 
   if (cleanConfig.icon !== undefined && typeof cleanConfig.icon !== 'string') {
     delete cleanConfig.icon;
+  }
+
+  if (cleanConfig.sort_by !== undefined) {
+    const validSorts = ['battery', 'name', 'type', 'last_replaced', 'status', 'area'];
+    if (!validSorts.includes(cleanConfig.sort_by)) {
+      cleanConfig.sort_by = 'battery';
+    }
+  }
+
+  if (cleanConfig.show_area !== undefined && typeof cleanConfig.show_area !== 'boolean') {
+    cleanConfig.show_area = Boolean(cleanConfig.show_area);
+  }
+
+  if (cleanConfig.always_show_area !== undefined && typeof cleanConfig.always_show_area !== 'boolean') {
+    cleanConfig.always_show_area = Boolean(cleanConfig.always_show_area);
   }
 
   return cleanConfig;

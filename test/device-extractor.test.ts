@@ -729,6 +729,227 @@ describe('Device Extractor Unit Tests', () => {
       assert.strictEqual(cleaned.step_rows, 5);
     });
   });
+
+  describe('Area Resolution & Area Configuration', () => {
+    it('resolves area name from device registry area_id', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.smoke_detector_battery_plus': {
+            entity_id: 'sensor.smoke_detector_battery_plus',
+            state: '90',
+            attributes: {
+              friendly_name: 'Smoke Detector Battery+',
+              battery_type: 'CR123A',
+            },
+          },
+        },
+      };
+
+      const registries: HomeAssistantRegistries = {
+        devices: new Map([
+          [
+            'dev_smoke_1',
+            {
+              id: 'dev_smoke_1',
+              name: 'Living Room Smoke Detector',
+              area_id: 'area_living_room',
+            },
+          ],
+        ]),
+        entities: new Map([
+          [
+            'sensor.smoke_detector_battery_plus',
+            {
+              entity_id: 'sensor.smoke_detector_battery_plus',
+              device_id: 'dev_smoke_1',
+            },
+          ],
+        ]),
+        areas: new Map([
+          [
+            'area_living_room',
+            {
+              area_id: 'area_living_room',
+              name: 'Living Room',
+            },
+          ],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+      assert.strictEqual(devices.length, 1);
+      assert.strictEqual(devices[0].area, 'Living Room');
+    });
+
+    it('resolves area via source_entity_id when battery notes entity lacks device_id directly', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.kitchen_pir_battery_plus': {
+            entity_id: 'sensor.kitchen_pir_battery_plus',
+            state: '70',
+            attributes: {
+              friendly_name: 'Kitchen PIR Battery+',
+              source_entity_id: 'sensor.kitchen_pir_battery',
+              battery_type: 'AAA',
+            },
+          },
+          'sensor.kitchen_pir_battery': {
+            entity_id: 'sensor.kitchen_pir_battery',
+            state: '70',
+            attributes: {
+              friendly_name: 'Kitchen Motion Sensor Battery',
+            },
+          },
+        },
+      };
+
+      const registries: HomeAssistantRegistries = {
+        devices: new Map([
+          [
+            'dev_kitchen_pir',
+            {
+              id: 'dev_kitchen_pir',
+              name: 'Motion Sensor',
+              area_id: 'area_kitchen',
+            },
+          ],
+        ]),
+        entities: new Map([
+          [
+            'sensor.kitchen_pir_battery',
+            {
+              entity_id: 'sensor.kitchen_pir_battery',
+              device_id: 'dev_kitchen_pir',
+            },
+          ],
+        ]),
+        areas: new Map([
+          [
+            'area_kitchen',
+            {
+              area_id: 'area_kitchen',
+              name: 'Kitchen',
+            },
+          ],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+      assert.strictEqual(devices.length, 1);
+      assert.strictEqual(devices[0].area, 'Kitchen');
+    });
+
+    it('resolves area directly from entity registry area_id override', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.bedroom_temp_battery_plus': {
+            entity_id: 'sensor.bedroom_temp_battery_plus',
+            state: '55',
+            attributes: {
+              friendly_name: 'Bedroom Temperature Battery+',
+              battery_type: 'CR2450',
+            },
+          },
+        },
+      };
+
+      const registries: HomeAssistantRegistries = {
+        devices: new Map([
+          [
+            'dev_bedroom_temp',
+            {
+              id: 'dev_bedroom_temp',
+              name: 'Temp Sensor',
+              area_id: 'area_hallway', // device in hallway, but entity moved to bedroom
+            },
+          ],
+        ]),
+        entities: new Map([
+          [
+            'sensor.bedroom_temp_battery_plus',
+            {
+              entity_id: 'sensor.bedroom_temp_battery_plus',
+              device_id: 'dev_bedroom_temp',
+              area_id: 'area_bedroom', // direct entity override
+            },
+          ],
+        ]),
+        areas: new Map([
+          [
+            'area_hallway',
+            {
+              area_id: 'area_hallway',
+              name: 'Hallway',
+            },
+          ],
+          [
+            'area_bedroom',
+            {
+              area_id: 'area_bedroom',
+              name: 'Bedroom',
+            },
+          ],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+      assert.strictEqual(devices.length, 1);
+      assert.strictEqual(devices[0].area, 'Bedroom');
+    });
+
+    it('sanitizeCardConfig preserves area sorting and area display options', () => {
+      const config: BatteryNotesCardConfig = {
+        type: 'custom:battery-notes-card',
+        sort_by: 'area',
+        sort_direction: 'desc',
+        show_area: true,
+        always_show_area: true,
+        columns: {
+          area: true,
+        },
+      };
+
+      const cleaned = sanitizeCardConfig(config);
+      assert.strictEqual(cleaned.sort_by, 'area');
+      assert.strictEqual(cleaned.sort_direction, 'desc');
+      assert.strictEqual(cleaned.show_area, true);
+      assert.strictEqual(cleaned.always_show_area, true);
+      assert.strictEqual(cleaned.columns?.area, true);
+    });
+
+    it('sorts devices by area ascending and descending with unassigned areas placed at the end', () => {
+      const devices = [
+        { name: 'Device Z', area: 'Living Room' },
+        { name: 'Device B', area: 'Bedroom' },
+        { name: 'Device X', area: undefined },
+        { name: 'Device A', area: 'Kitchen' },
+      ];
+
+      const sortAsc = (list: typeof devices) => [...list].sort((a, b) => {
+        const areaA = a.area || '';
+        const areaB = b.area || '';
+        if (!areaA && areaB) return 1;
+        if (areaA && !areaB) return -1;
+        const cmp = areaA.localeCompare(areaB) || a.name.localeCompare(b.name);
+        return cmp;
+      });
+
+      const sortDesc = (list: typeof devices) => [...list].sort((a, b) => {
+        const areaA = a.area || '';
+        const areaB = b.area || '';
+        if (!areaA && areaB) return 1;
+        if (areaA && !areaB) return -1;
+        const cmp = areaA.localeCompare(areaB) || a.name.localeCompare(b.name);
+        return -cmp;
+      });
+
+      const asc = sortAsc(devices);
+      assert.deepStrictEqual(asc.map(d => d.name), ['Device B', 'Device A', 'Device Z', 'Device X']);
+
+      const desc = sortDesc(devices);
+      assert.deepStrictEqual(desc.map(d => d.name), ['Device Z', 'Device A', 'Device B', 'Device X']);
+    });
+  });
 });
 
 

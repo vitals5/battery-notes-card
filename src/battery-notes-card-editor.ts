@@ -68,6 +68,7 @@ export class BatteryNotesCardEditor extends LitElement {
       type: true,
       last_replaced: true,
       status: true,
+      area: false,
       note: false,
       actions: true,
       ...(this._config.columns || {}),
@@ -111,6 +112,7 @@ export class BatteryNotesCardEditor extends LitElement {
             >
               <option value="battery">${localize('editor_col_battery', lang)}</option>
               <option value="name">${localize('editor_col_name', lang)}</option>
+              <option value="area">${localize('editor_col_area', lang)}</option>
               <option value="type">${localize('editor_col_type', lang)}</option>
               <option value="last_replaced">${localize('editor_col_last_replaced', lang)}</option>
               <option value="status">${localize('editor_col_status', lang)}</option>
@@ -234,6 +236,24 @@ export class BatteryNotesCardEditor extends LitElement {
             />
             <span>${localize('editor_hide_unavailable', lang)}</span>
           </label>
+
+          <label class="toggle-label">
+            <input
+              type="checkbox"
+              .checked=${this._config.show_area ?? true}
+              @change=${(e: Event) => this._valueChanged(e, 'show_area')}
+            />
+            <span>${localize('editor_show_area', lang)}</span>
+          </label>
+
+          <label class="toggle-label">
+            <input
+              type="checkbox"
+              .checked=${this._config.always_show_area ?? false}
+              @change=${(e: Event) => this._valueChanged(e, 'always_show_area')}
+            />
+            <span>${localize('editor_always_show_area', lang)}</span>
+          </label>
         </div>
 
         <!-- Visible Columns -->
@@ -283,6 +303,15 @@ export class BatteryNotesCardEditor extends LitElement {
               @change=${(e: Event) => this._valueChanged(e, 'status', true)}
             />
             <span>${localize('editor_col_status', lang)}</span>
+          </label>
+
+          <label class="toggle-label">
+            <input
+              type="checkbox"
+              .checked=${cols.area}
+              @change=${(e: Event) => this._valueChanged(e, 'area', true)}
+            />
+            <span>${localize('editor_col_area', lang)}</span>
           </label>
 
           <label class="toggle-label">

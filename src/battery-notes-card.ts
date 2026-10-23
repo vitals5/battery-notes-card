@@ -22,7 +22,7 @@ export class BatteryNotesCard extends LitElement {
   @state() private _config!: BatteryNotesCardConfig;
   @state() private _searchQuery = '';
   @state() private _activeFilter: 'all' | 'low' | 'critical' = 'all';
-  @state() private _sortBy: 'battery' | 'name' | 'type' | 'last_replaced' | 'status' = 'battery';
+  @state() private _sortBy: 'battery' | 'name' | 'type' | 'last_replaced' | 'status' | 'area' = 'battery';
   @state() private _sortDirection: 'asc' | 'desc' = 'asc';
   @state() private _recentlyReplaced = new Set<string>();
   @state() private _displayedRows = 0;
@@ -49,6 +49,7 @@ export class BatteryNotesCard extends LitElement {
       confirm_replace: true,
       columns: {
         name: true,
+        area: false,
         battery: true,
         type: true,
         last_replaced: true,
@@ -78,6 +79,7 @@ export class BatteryNotesCard extends LitElement {
       ...cleanConfig,
       columns: {
         name: true,
+        area: false,
         battery: true,
         type: true,
         last_replaced: true,
@@ -191,7 +193,7 @@ export class BatteryNotesCard extends LitElement {
     return 'good';
   }
 
-  private _handleSort(column: 'battery' | 'name' | 'type' | 'last_replaced' | 'status'): void {
+  private _handleSort(column: 'battery' | 'name' | 'type' | 'last_replaced' | 'status' | 'area'): void {
     if (this._sortBy === column) {
       this._sortDirection = this._sortDirection === 'asc' ? 'desc' : 'asc';
     } else {
@@ -303,7 +305,8 @@ export class BatteryNotesCard extends LitElement {
         const matchesName = device.name.toLowerCase().includes(query);
         const matchesType = device.batteryTypeAndQuantity.toLowerCase().includes(query);
         const matchesNote = device.note?.toLowerCase().includes(query) || false;
-        if (!matchesName && !matchesType && !matchesNote) return false;
+        const matchesArea = device.area?.toLowerCase().includes(query) || false;
+        if (!matchesName && !matchesType && !matchesNote && !matchesArea) return false;
       }
 
       return true;
@@ -321,6 +324,14 @@ export class BatteryNotesCard extends LitElement {
         case 'name':
           comparison = a.name.localeCompare(b.name);
           break;
+        case 'area': {
+          const areaA = a.area || '';
+          const areaB = b.area || '';
+          if (!areaA && areaB) return 1;
+          if (areaA && !areaB) return -1;
+          const cmp = areaA.localeCompare(areaB) || a.name.localeCompare(b.name);
+          return this._sortDirection === 'asc' ? cmp : -cmp;
+        }
         case 'type':
           comparison = a.batteryTypeAndQuantity.localeCompare(b.batteryTypeAndQuantity);
           break;
@@ -350,6 +361,7 @@ export class BatteryNotesCard extends LitElement {
 
     const cols = {
       name: true,
+      area: false,
       battery: true,
       type: true,
       last_replaced: true,
@@ -507,6 +519,26 @@ export class BatteryNotesCard extends LitElement {
                               </th>
                             `
                           : ''}
+                        ${cols.area
+                          ? html`
+                              <th
+                                class="col-area-th sortable"
+                                @click=${() => this._handleSort('area')}
+                              >
+                                <div class="th-content">
+                                  <span>${localize('col_area', lang)}</span>
+                                  ${this._sortBy === 'area'
+                                    ? html`<ha-icon
+                                        class="sort-icon"
+                                        icon="${this._sortDirection === 'asc'
+                                          ? 'mdi:arrow-up'
+                                          : 'mdi:arrow-down'}"
+                                      ></ha-icon>`
+                                    : ''}
+                                </div>
+                              </th>
+                            `
+                          : ''}
                         ${cols.battery
                           ? html`
                               <th
@@ -613,13 +645,29 @@ export class BatteryNotesCard extends LitElement {
                                       >
                                         ${item.name}
                                       </button>
-                                      ${item.area && !item.name.toLowerCase().includes(item.area.toLowerCase())
+                                      ${!cols.area && this._config.show_area !== false && item.area && (this._config.always_show_area || !item.name.toLowerCase().includes(item.area.toLowerCase()))
                                         ? html`<span class="device-subtext"><ha-icon icon="mdi:map-marker-outline" style="--mdc-icon-size: 12px; margin-right: 2px;"></ha-icon>${item.area}</span>`
                                         : ''}
                                       ${item.note && !cols.note
                                         ? html`<span class="device-subtext">${item.note}</span>`
                                         : ''}
                                     </div>
+                                  </td>
+                                `
+                              : ''}
+
+                            <!-- Area -->
+                            ${cols.area
+                              ? html`
+                                  <td class="col-area-td">
+                                    ${item.area
+                                      ? html`
+                                          <span class="area-badge">
+                                            <ha-icon icon="mdi:map-marker-outline"></ha-icon>
+                                            ${item.area}
+                                          </span>
+                                        `
+                                      : html`<span class="text-muted">-</span>`}
                                   </td>
                                 `
                               : ''}

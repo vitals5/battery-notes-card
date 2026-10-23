@@ -1,6 +1,6 @@
-"use strict";(()=>{var fe=Object.defineProperty;var ye=Object.getOwnPropertyDescriptor;var k=(r,t,e,i)=>{for(var s=i>1?void 0:i?ye(t,e):t,a=r.length-1,o;a>=0;a--)(o=r[a])&&(s=(i?o(t,e,s):o(s))||s);return i&&s&&fe(t,e,s),s};var nt=globalThis,lt=nt.ShadowRoot&&(nt.ShadyCSS===void 0||nt.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,wt=Symbol(),Tt=new WeakMap,J=class{constructor(t,e,i){if(this._$cssResult$=!0,i!==wt)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=e}get styleSheet(){let t=this.o,e=this.t;if(lt&&t===void 0){let i=e!==void 0&&e.length===1;i&&(t=Tt.get(e)),t===void 0&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),i&&Tt.set(e,t))}return t}toString(){return this.cssText}},Dt=r=>new J(typeof r=="string"?r:r+"",void 0,wt),Y=(r,...t)=>{let e=r.length===1?r[0]:t.reduce((i,s,a)=>i+(o=>{if(o._$cssResult$===!0)return o.cssText;if(typeof o=="number")return o;throw Error("Value passed to 'css' function must be a 'css' function result: "+o+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(s)+r[a+1],r[0]);return new J(e,r,wt)},Ht=(r,t)=>{if(lt)r.adoptedStyleSheets=t.map(e=>e instanceof CSSStyleSheet?e:e.styleSheet);else for(let e of t){let i=document.createElement("style"),s=nt.litNonce;s!==void 0&&i.setAttribute("nonce",s),i.textContent=e.cssText,r.appendChild(i)}},$t=lt?r=>r:r=>r instanceof CSSStyleSheet?(t=>{let e="";for(let i of t.cssRules)e+=i.cssText;return Dt(e)})(r):r;var{is:be,defineProperty:ge,getOwnPropertyDescriptor:me,getOwnPropertyNames:ve,getOwnPropertySymbols:we,getPrototypeOf:$e}=Object,ct=globalThis,Ot=ct.trustedTypes,xe=Ot?Ot.emptyScript:"",Se=ct.reactiveElementPolyfillSupport,X=(r,t)=>r,tt={toAttribute(r,t){switch(t){case Boolean:r=r?xe:null;break;case Object:case Array:r=r==null?r:JSON.stringify(r)}return r},fromAttribute(r,t){let e=r;switch(t){case Boolean:e=r!==null;break;case Number:e=r===null?null:Number(r);break;case Object:case Array:try{e=JSON.parse(r)}catch{e=null}}return e}},dt=(r,t)=>!be(r,t),It={attribute:!0,type:String,converter:tt,reflect:!1,useDefault:!1,hasChanged:dt};Symbol.metadata??=Symbol("metadata"),ct.litPropertyMetadata??=new WeakMap;var z=class extends HTMLElement{static addInitializer(t){this._$Ei(),(this.l??=[]).push(t)}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(t,e=It){if(e.state&&(e.attribute=!1),this._$Ei(),this.prototype.hasOwnProperty(t)&&((e=Object.create(e)).wrapped=!0),this.elementProperties.set(t,e),!e.noAccessor){let i=Symbol(),s=this.getPropertyDescriptor(t,i,e);s!==void 0&&ge(this.prototype,t,s)}}static getPropertyDescriptor(t,e,i){let{get:s,set:a}=me(this.prototype,t)??{get(){return this[e]},set(o){this[e]=o}};return{get:s,set(o){let u=s?.call(this);a?.call(this,o),this.requestUpdate(t,u,i)},configurable:!0,enumerable:!0}}static getPropertyOptions(t){return this.elementProperties.get(t)??It}static _$Ei(){if(this.hasOwnProperty(X("elementProperties")))return;let t=$e(this);t.finalize(),t.l!==void 0&&(this.l=[...t.l]),this.elementProperties=new Map(t.elementProperties)}static finalize(){if(this.hasOwnProperty(X("finalized")))return;if(this.finalized=!0,this._$Ei(),this.hasOwnProperty(X("properties"))){let e=this.properties,i=[...ve(e),...we(e)];for(let s of i)this.createProperty(s,e[s])}let t=this[Symbol.metadata];if(t!==null){let e=litPropertyMetadata.get(t);if(e!==void 0)for(let[i,s]of e)this.elementProperties.set(i,s)}this._$Eh=new Map;for(let[e,i]of this.elementProperties){let s=this._$Eu(e,i);s!==void 0&&this._$Eh.set(s,e)}this.elementStyles=this.finalizeStyles(this.styles)}static finalizeStyles(t){let e=[];if(Array.isArray(t)){let i=new Set(t.flat(1/0).reverse());for(let s of i)e.unshift($t(s))}else t!==void 0&&e.push($t(t));return e}static _$Eu(t,e){let i=e.attribute;return i===!1?void 0:typeof i=="string"?i:typeof t=="string"?t.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=!1,this.hasUpdated=!1,this._$Em=null,this._$Ev()}_$Ev(){this._$ES=new Promise(t=>this.enableUpdating=t),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach(t=>t(this))}addController(t){(this._$EO??=new Set).add(t),this.renderRoot!==void 0&&this.isConnected&&t.hostConnected?.()}removeController(t){this._$EO?.delete(t)}_$E_(){let t=new Map,e=this.constructor.elementProperties;for(let i of e.keys())this.hasOwnProperty(i)&&(t.set(i,this[i]),delete this[i]);t.size>0&&(this._$Ep=t)}createRenderRoot(){let t=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return Ht(t,this.constructor.elementStyles),t}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(!0),this._$EO?.forEach(t=>t.hostConnected?.())}enableUpdating(t){}disconnectedCallback(){this._$EO?.forEach(t=>t.hostDisconnected?.())}attributeChangedCallback(t,e,i){this._$AK(t,i)}_$ET(t,e){let i=this.constructor.elementProperties.get(t),s=this.constructor._$Eu(t,i);if(s!==void 0&&i.reflect===!0){let a=(i.converter?.toAttribute!==void 0?i.converter:tt).toAttribute(e,i.type);this._$Em=t,a==null?this.removeAttribute(s):this.setAttribute(s,a),this._$Em=null}}_$AK(t,e){let i=this.constructor,s=i._$Eh.get(t);if(s!==void 0&&this._$Em!==s){let a=i.getPropertyOptions(s),o=typeof a.converter=="function"?{fromAttribute:a.converter}:a.converter?.fromAttribute!==void 0?a.converter:tt;this._$Em=s;let u=o.fromAttribute(e,a.type);this[s]=u??this._$Ej?.get(s)??u,this._$Em=null}}requestUpdate(t,e,i,s=!1,a){if(t!==void 0){let o=this.constructor;if(s===!1&&(a=this[t]),i??=o.getPropertyOptions(t),!((i.hasChanged??dt)(a,e)||i.useDefault&&i.reflect&&a===this._$Ej?.get(t)&&!this.hasAttribute(o._$Eu(t,i))))return;this.C(t,e,i)}this.isUpdatePending===!1&&(this._$ES=this._$EP())}C(t,e,{useDefault:i,reflect:s,wrapped:a},o){i&&!(this._$Ej??=new Map).has(t)&&(this._$Ej.set(t,o??e??this[t]),a!==!0||o!==void 0)||(this._$AL.has(t)||(this.hasUpdated||i||(e=void 0),this._$AL.set(t,e)),s===!0&&this._$Em!==t&&(this._$Eq??=new Set).add(t))}async _$EP(){this.isUpdatePending=!0;try{await this._$ES}catch(e){Promise.reject(e)}let t=this.scheduleUpdate();return t!=null&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(let[s,a]of this._$Ep)this[s]=a;this._$Ep=void 0}let i=this.constructor.elementProperties;if(i.size>0)for(let[s,a]of i){let{wrapped:o}=a,u=this[s];o!==!0||this._$AL.has(s)||u===void 0||this.C(s,void 0,a,u)}}let t=!1,e=this._$AL;try{t=this.shouldUpdate(e),t?(this.willUpdate(e),this._$EO?.forEach(i=>i.hostUpdate?.()),this.update(e)):this._$EM()}catch(i){throw t=!1,this._$EM(),i}t&&this._$AE(e)}willUpdate(t){}_$AE(t){this._$EO?.forEach(e=>e.hostUpdated?.()),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(t)),this.updated(t)}_$EM(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(t){return!0}update(t){this._$Eq&&=this._$Eq.forEach(e=>this._$ET(e,this[e])),this._$EM()}updated(t){}firstUpdated(t){}};z.elementStyles=[],z.shadowRootOptions={mode:"open"},z[X("elementProperties")]=new Map,z[X("finalized")]=new Map,Se?.({ReactiveElement:z}),(ct.reactiveElementVersions??=[]).push("2.1.2");var Bt=globalThis,Ut=r=>r,pt=Bt.trustedTypes,Wt=pt?pt.createPolicy("lit-html",{createHTML:r=>r}):void 0,Gt="$lit$",T=`lit$${Math.random().toFixed(9).slice(2)}$`,Kt="?"+T,Ce=`<${Kt}>`,U=document,it=()=>U.createComment(""),rt=r=>r===null||typeof r!="object"&&typeof r!="function",Nt=Array.isArray,Ae=r=>Nt(r)||typeof r?.[Symbol.iterator]=="function",xt=`[ 	
-\f\r]`,et=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,jt=/-->/g,qt=/>/g,O=RegExp(`>|${xt}(?:([^\\s"'>=/]+)(${xt}*=${xt}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`,"g"),Ft=/'/g,Qt=/"/g,Zt=/^(?:script|style|textarea|title)$/i,Rt=r=>(t,...e)=>({_$litType$:r,strings:t,values:e}),h=Rt(1),Ie=Rt(2),Ue=Rt(3),W=Symbol.for("lit-noChange"),x=Symbol.for("lit-nothing"),Vt=new WeakMap,I=U.createTreeWalker(U,129);function Jt(r,t){if(!Nt(r)||!r.hasOwnProperty("raw"))throw Error("invalid template strings array");return Wt!==void 0?Wt.createHTML(t):t}var ke=(r,t)=>{let e=r.length-1,i=[],s,a=t===2?"<svg>":t===3?"<math>":"",o=et;for(let u=0;u<e;u++){let p=r[u],_,g,l=-1,f=0;for(;f<p.length&&(o.lastIndex=f,g=o.exec(p),g!==null);)f=o.lastIndex,o===et?g[1]==="!--"?o=jt:g[1]!==void 0?o=qt:g[2]!==void 0?(Zt.test(g[2])&&(s=RegExp("</"+g[2],"g")),o=O):g[3]!==void 0&&(o=O):o===O?g[0]===">"?(o=s??et,l=-1):g[1]===void 0?l=-2:(l=o.lastIndex-g[2].length,_=g[1],o=g[3]===void 0?O:g[3]==='"'?Qt:Ft):o===Qt||o===Ft?o=O:o===jt||o===qt?o=et:(o=O,s=void 0);let n=o===O&&r[u+1].startsWith("/>")?" ":"";a+=o===et?p+Ce:l>=0?(i.push(_),p.slice(0,l)+Gt+p.slice(l)+T+n):p+T+(l===-2?u:n)}return[Jt(r,a+(r[e]||"<?>")+(t===2?"</svg>":t===3?"</math>":"")),i]},st=class r{constructor({strings:t,_$litType$:e},i){let s;this.parts=[];let a=0,o=0,u=t.length-1,p=this.parts,[_,g]=ke(t,e);if(this.el=r.createElement(_,i),I.currentNode=this.el.content,e===2||e===3){let l=this.el.content.firstChild;l.replaceWith(...l.childNodes)}for(;(s=I.nextNode())!==null&&p.length<u;){if(s.nodeType===1){if(s.hasAttributes())for(let l of s.getAttributeNames())if(l.endsWith(Gt)){let f=g[o++],n=s.getAttribute(l).split(T),b=/([.?@])?(.*)/.exec(f);p.push({type:1,index:a,name:b[2],strings:n,ctor:b[1]==="."?Ct:b[1]==="?"?At:b[1]==="@"?kt:Q}),s.removeAttribute(l)}else l.startsWith(T)&&(p.push({type:6,index:a}),s.removeAttribute(l));if(Zt.test(s.tagName)){let l=s.textContent.split(T),f=l.length-1;if(f>0){s.textContent=pt?pt.emptyScript:"";for(let n=0;n<f;n++)s.append(l[n],it()),I.nextNode(),p.push({type:2,index:++a});s.append(l[f],it())}}}else if(s.nodeType===8)if(s.data===Kt)p.push({type:2,index:a});else{let l=-1;for(;(l=s.data.indexOf(T,l+1))!==-1;)p.push({type:7,index:a}),l+=T.length-1}a++}}static createElement(t,e){let i=U.createElement("template");return i.innerHTML=t,i}};function F(r,t,e=r,i){if(t===W)return t;let s=i!==void 0?e._$Co?.[i]:e._$Cl,a=rt(t)?void 0:t._$litDirective$;return s?.constructor!==a&&(s?._$AO?.(!1),a===void 0?s=void 0:(s=new a(r),s._$AT(r,e,i)),i!==void 0?(e._$Co??=[])[i]=s:e._$Cl=s),s!==void 0&&(t=F(r,s._$AS(r,t.values),s,i)),t}var St=class{constructor(t,e){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=e}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){let{el:{content:e},parts:i}=this._$AD,s=(t?.creationScope??U).importNode(e,!0);I.currentNode=s;let a=I.nextNode(),o=0,u=0,p=i[0];for(;p!==void 0;){if(o===p.index){let _;p.type===2?_=new at(a,a.nextSibling,this,t):p.type===1?_=new p.ctor(a,p.name,p.strings,this,t):p.type===6&&(_=new Et(a,this,t)),this._$AV.push(_),p=i[++u]}o!==p?.index&&(a=I.nextNode(),o++)}return I.currentNode=U,s}p(t){let e=0;for(let i of this._$AV)i!==void 0&&(i.strings!==void 0?(i._$AI(t,i,e),e+=i.strings.length-2):i._$AI(t[e])),e++}},at=class r{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(t,e,i,s){this.type=2,this._$AH=x,this._$AN=void 0,this._$AA=t,this._$AB=e,this._$AM=i,this.options=s,this._$Cv=s?.isConnected??!0}get parentNode(){let t=this._$AA.parentNode,e=this._$AM;return e!==void 0&&t?.nodeType===11&&(t=e.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,e=this){t=F(this,t,e),rt(t)?t===x||t==null||t===""?(this._$AH!==x&&this._$AR(),this._$AH=x):t!==this._$AH&&t!==W&&this._(t):t._$litType$!==void 0?this.$(t):t.nodeType!==void 0?this.T(t):Ae(t)?this.k(t):this._(t)}O(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}T(t){this._$AH!==t&&(this._$AR(),this._$AH=this.O(t))}_(t){this._$AH!==x&&rt(this._$AH)?this._$AA.nextSibling.data=t:this.T(U.createTextNode(t)),this._$AH=t}$(t){let{values:e,_$litType$:i}=t,s=typeof i=="number"?this._$AC(t):(i.el===void 0&&(i.el=st.createElement(Jt(i.h,i.h[0]),this.options)),i);if(this._$AH?._$AD===s)this._$AH.p(e);else{let a=new St(s,this),o=a.u(this.options);a.p(e),this.T(o),this._$AH=a}}_$AC(t){let e=Vt.get(t.strings);return e===void 0&&Vt.set(t.strings,e=new st(t)),e}k(t){Nt(this._$AH)||(this._$AH=[],this._$AR());let e=this._$AH,i,s=0;for(let a of t)s===e.length?e.push(i=new r(this.O(it()),this.O(it()),this,this.options)):i=e[s],i._$AI(a),s++;s<e.length&&(this._$AR(i&&i._$AB.nextSibling,s),e.length=s)}_$AR(t=this._$AA.nextSibling,e){for(this._$AP?.(!1,!0,e);t!==this._$AB;){let i=Ut(t).nextSibling;Ut(t).remove(),t=i}}setConnected(t){this._$AM===void 0&&(this._$Cv=t,this._$AP?.(t))}},Q=class{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(t,e,i,s,a){this.type=1,this._$AH=x,this._$AN=void 0,this.element=t,this.name=e,this._$AM=s,this.options=a,i.length>2||i[0]!==""||i[1]!==""?(this._$AH=Array(i.length-1).fill(new String),this.strings=i):this._$AH=x}_$AI(t,e=this,i,s){let a=this.strings,o=!1;if(a===void 0)t=F(this,t,e,0),o=!rt(t)||t!==this._$AH&&t!==W,o&&(this._$AH=t);else{let u=t,p,_;for(t=a[0],p=0;p<a.length-1;p++)_=F(this,u[i+p],e,p),_===W&&(_=this._$AH[p]),o||=!rt(_)||_!==this._$AH[p],_===x?t=x:t!==x&&(t+=(_??"")+a[p+1]),this._$AH[p]=_}o&&!s&&this.j(t)}j(t){t===x?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"")}},Ct=class extends Q{constructor(){super(...arguments),this.type=3}j(t){this.element[this.name]=t===x?void 0:t}},At=class extends Q{constructor(){super(...arguments),this.type=4}j(t){this.element.toggleAttribute(this.name,!!t&&t!==x)}},kt=class extends Q{constructor(t,e,i,s,a){super(t,e,i,s,a),this.type=5}_$AI(t,e=this){if((t=F(this,t,e,0)??x)===W)return;let i=this._$AH,s=t===x&&i!==x||t.capture!==i.capture||t.once!==i.once||t.passive!==i.passive,a=t!==x&&(i===x||s);s&&this.element.removeEventListener(this.name,this,i),a&&this.element.addEventListener(this.name,this,t),this._$AH=t}handleEvent(t){typeof this._$AH=="function"?this._$AH.call(this.options?.host??this.element,t):this._$AH.handleEvent(t)}},Et=class{constructor(t,e,i){this.element=t,this.type=6,this._$AN=void 0,this._$AM=e,this.options=i}get _$AU(){return this._$AM._$AU}_$AI(t){F(this,t)}};var Ee=Bt.litHtmlPolyfillSupport;Ee?.(st,at),(Bt.litHtmlVersions??=[]).push("3.3.3");var Yt=(r,t,e)=>{let i=e?.renderBefore??t,s=i._$litPart$;if(s===void 0){let a=e?.renderBefore??null;i._$litPart$=s=new at(t.insertBefore(it(),a),a,void 0,e??{})}return s._$AI(r),s};var Lt=globalThis,N=class extends z{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){let t=super.createRenderRoot();return this.renderOptions.renderBefore??=t.firstChild,t}update(t){let e=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=Yt(e,this.renderRoot,this.renderOptions)}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(!0)}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(!1)}render(){return W}};N._$litElement$=!0,N.finalized=!0,Lt.litElementHydrateSupport?.({LitElement:N});var Be=Lt.litElementPolyfillSupport;Be?.({LitElement:N});(Lt.litElementVersions??=[]).push("4.2.2");var Ne={attribute:!0,type:String,converter:tt,reflect:!1,hasChanged:dt},Re=(r=Ne,t,e)=>{let{kind:i,metadata:s}=e,a=globalThis.litPropertyMetadata.get(s);if(a===void 0&&globalThis.litPropertyMetadata.set(s,a=new Map),i==="setter"&&((r=Object.create(r)).wrapped=!0),a.set(e.name,r),i==="accessor"){let{name:o}=e;return{set(u){let p=t.get.call(this);t.set.call(this,u),this.requestUpdate(o,p,r,!0,u)},init(u){return u!==void 0&&this.C(o,void 0,r,u),u}}}if(i==="setter"){let{name:o}=e;return function(u){let p=this[o];t.call(this,u),this.requestUpdate(o,p,r,!0,u)}}throw Error("Unsupported decorator location: "+i)};function V(r){return(t,e)=>typeof e=="object"?Re(r,t,e):((i,s,a)=>{let o=s.hasOwnProperty(a);return s.constructor.createProperty(a,i),o?Object.getOwnPropertyDescriptor(s,a):void 0})(r,t,e)}function R(r){return V({...r,state:!0,attribute:!1})}var Xt=Y`
+"use strict";(()=>{var yt=Object.defineProperty;var bt=Object.getOwnPropertyDescriptor;var N=(r,e,t,i)=>{for(var a=i>1?void 0:i?bt(e,t):e,s=r.length-1,o;s>=0;s--)(o=r[s])&&(a=(i?o(e,t,a):o(a))||a);return i&&a&&yt(e,t,a),a};var pe=globalThis,he=pe.ShadowRoot&&(pe.ShadyCSS===void 0||pe.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,Se=Symbol(),Ie=new WeakMap,ee=class{constructor(e,t,i){if(this._$cssResult$=!0,i!==Se)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=e,this.t=t}get styleSheet(){let e=this.o,t=this.t;if(he&&e===void 0){let i=t!==void 0&&t.length===1;i&&(e=Ie.get(t)),e===void 0&&((this.o=e=new CSSStyleSheet).replaceSync(this.cssText),i&&Ie.set(t,e))}return e}toString(){return this.cssText}},Oe=r=>new ee(typeof r=="string"?r:r+"",void 0,Se),te=(r,...e)=>{let t=r.length===1?r[0]:e.reduce((i,a,s)=>i+(o=>{if(o._$cssResult$===!0)return o.cssText;if(typeof o=="number")return o;throw Error("Value passed to 'css' function must be a 'css' function result: "+o+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(a)+r[s+1],r[0]);return new ee(t,r,Se)},Ue=(r,e)=>{if(he)r.adoptedStyleSheets=e.map(t=>t instanceof CSSStyleSheet?t:t.styleSheet);else for(let t of e){let i=document.createElement("style"),a=pe.litNonce;a!==void 0&&i.setAttribute("nonce",a),i.textContent=t.cssText,r.appendChild(i)}},Ae=he?r=>r:r=>r instanceof CSSStyleSheet?(e=>{let t="";for(let i of e.cssRules)t+=i.cssText;return Oe(t)})(r):r;var{is:gt,defineProperty:mt,getOwnPropertyDescriptor:vt,getOwnPropertyNames:wt,getOwnPropertySymbols:$t,getPrototypeOf:xt}=Object,ue=globalThis,We=ue.trustedTypes,St=We?We.emptyScript:"",At=ue.reactiveElementPolyfillSupport,ie=(r,e)=>r,re={toAttribute(r,e){switch(e){case Boolean:r=r?St:null;break;case Object:case Array:r=r==null?r:JSON.stringify(r)}return r},fromAttribute(r,e){let t=r;switch(e){case Boolean:t=r!==null;break;case Number:t=r===null?null:Number(r);break;case Object:case Array:try{t=JSON.parse(r)}catch{t=null}}return t}},_e=(r,e)=>!gt(r,e),je={attribute:!0,type:String,converter:re,reflect:!1,useDefault:!1,hasChanged:_e};Symbol.metadata??=Symbol("metadata"),ue.litPropertyMetadata??=new WeakMap;var T=class extends HTMLElement{static addInitializer(e){this._$Ei(),(this.l??=[]).push(e)}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(e,t=je){if(t.state&&(t.attribute=!1),this._$Ei(),this.prototype.hasOwnProperty(e)&&((t=Object.create(t)).wrapped=!0),this.elementProperties.set(e,t),!t.noAccessor){let i=Symbol(),a=this.getPropertyDescriptor(e,i,t);a!==void 0&&mt(this.prototype,e,a)}}static getPropertyDescriptor(e,t,i){let{get:a,set:s}=vt(this.prototype,e)??{get(){return this[t]},set(o){this[t]=o}};return{get:a,set(o){let _=a?.call(this);s?.call(this,o),this.requestUpdate(e,_,i)},configurable:!0,enumerable:!0}}static getPropertyOptions(e){return this.elementProperties.get(e)??je}static _$Ei(){if(this.hasOwnProperty(ie("elementProperties")))return;let e=xt(this);e.finalize(),e.l!==void 0&&(this.l=[...e.l]),this.elementProperties=new Map(e.elementProperties)}static finalize(){if(this.hasOwnProperty(ie("finalized")))return;if(this.finalized=!0,this._$Ei(),this.hasOwnProperty(ie("properties"))){let t=this.properties,i=[...wt(t),...$t(t)];for(let a of i)this.createProperty(a,t[a])}let e=this[Symbol.metadata];if(e!==null){let t=litPropertyMetadata.get(e);if(t!==void 0)for(let[i,a]of t)this.elementProperties.set(i,a)}this._$Eh=new Map;for(let[t,i]of this.elementProperties){let a=this._$Eu(t,i);a!==void 0&&this._$Eh.set(a,t)}this.elementStyles=this.finalizeStyles(this.styles)}static finalizeStyles(e){let t=[];if(Array.isArray(e)){let i=new Set(e.flat(1/0).reverse());for(let a of i)t.unshift(Ae(a))}else e!==void 0&&t.push(Ae(e));return t}static _$Eu(e,t){let i=t.attribute;return i===!1?void 0:typeof i=="string"?i:typeof e=="string"?e.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=!1,this.hasUpdated=!1,this._$Em=null,this._$Ev()}_$Ev(){this._$ES=new Promise(e=>this.enableUpdating=e),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach(e=>e(this))}addController(e){(this._$EO??=new Set).add(e),this.renderRoot!==void 0&&this.isConnected&&e.hostConnected?.()}removeController(e){this._$EO?.delete(e)}_$E_(){let e=new Map,t=this.constructor.elementProperties;for(let i of t.keys())this.hasOwnProperty(i)&&(e.set(i,this[i]),delete this[i]);e.size>0&&(this._$Ep=e)}createRenderRoot(){let e=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return Ue(e,this.constructor.elementStyles),e}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(!0),this._$EO?.forEach(e=>e.hostConnected?.())}enableUpdating(e){}disconnectedCallback(){this._$EO?.forEach(e=>e.hostDisconnected?.())}attributeChangedCallback(e,t,i){this._$AK(e,i)}_$ET(e,t){let i=this.constructor.elementProperties.get(e),a=this.constructor._$Eu(e,i);if(a!==void 0&&i.reflect===!0){let s=(i.converter?.toAttribute!==void 0?i.converter:re).toAttribute(t,i.type);this._$Em=e,s==null?this.removeAttribute(a):this.setAttribute(a,s),this._$Em=null}}_$AK(e,t){let i=this.constructor,a=i._$Eh.get(e);if(a!==void 0&&this._$Em!==a){let s=i.getPropertyOptions(a),o=typeof s.converter=="function"?{fromAttribute:s.converter}:s.converter?.fromAttribute!==void 0?s.converter:re;this._$Em=a;let _=o.fromAttribute(t,s.type);this[a]=_??this._$Ej?.get(a)??_,this._$Em=null}}requestUpdate(e,t,i,a=!1,s){if(e!==void 0){let o=this.constructor;if(a===!1&&(s=this[e]),i??=o.getPropertyOptions(e),!((i.hasChanged??_e)(s,t)||i.useDefault&&i.reflect&&s===this._$Ej?.get(e)&&!this.hasAttribute(o._$Eu(e,i))))return;this.C(e,t,i)}this.isUpdatePending===!1&&(this._$ES=this._$EP())}C(e,t,{useDefault:i,reflect:a,wrapped:s},o){i&&!(this._$Ej??=new Map).has(e)&&(this._$Ej.set(e,o??t??this[e]),s!==!0||o!==void 0)||(this._$AL.has(e)||(this.hasUpdated||i||(t=void 0),this._$AL.set(e,t)),a===!0&&this._$Em!==e&&(this._$Eq??=new Set).add(e))}async _$EP(){this.isUpdatePending=!0;try{await this._$ES}catch(t){Promise.reject(t)}let e=this.scheduleUpdate();return e!=null&&await e,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(let[a,s]of this._$Ep)this[a]=s;this._$Ep=void 0}let i=this.constructor.elementProperties;if(i.size>0)for(let[a,s]of i){let{wrapped:o}=s,_=this[a];o!==!0||this._$AL.has(a)||_===void 0||this.C(a,void 0,s,_)}}let e=!1,t=this._$AL;try{e=this.shouldUpdate(t),e?(this.willUpdate(t),this._$EO?.forEach(i=>i.hostUpdate?.()),this.update(t)):this._$EM()}catch(i){throw e=!1,this._$EM(),i}e&&this._$AE(t)}willUpdate(e){}_$AE(e){this._$EO?.forEach(t=>t.hostUpdated?.()),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(e)),this.updated(e)}_$EM(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(e){return!0}update(e){this._$Eq&&=this._$Eq.forEach(t=>this._$ET(t,this[t])),this._$EM()}updated(e){}firstUpdated(e){}};T.elementStyles=[],T.shadowRootOptions={mode:"open"},T[ie("elementProperties")]=new Map,T[ie("finalized")]=new Map,At?.({ReactiveElement:T}),(ue.reactiveElementVersions??=[]).push("2.1.2");var ze=globalThis,qe=r=>r,fe=ze.trustedTypes,Fe=fe?fe.createPolicy("lit-html",{createHTML:r=>r}):void 0,Je="$lit$",I=`lit$${Math.random().toFixed(9).slice(2)}$`,Ye="?"+I,Ct=`<${Ye}>`,F=document,se=()=>F.createComment(""),oe=r=>r===null||typeof r!="object"&&typeof r!="function",Le=Array.isArray,kt=r=>Le(r)||typeof r?.[Symbol.iterator]=="function",Ce=`[ 	
+\f\r]`,ae=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,Qe=/-->/g,Ve=/>/g,j=RegExp(`>|${Ce}(?:([^\\s"'>=/]+)(${Ce}*=${Ce}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`,"g"),Ge=/'/g,Ke=/"/g,Xe=/^(?:script|style|textarea|title)$/i,Pe=r=>(e,...t)=>({_$litType$:r,strings:e,values:t}),h=Pe(1),Ut=Pe(2),Wt=Pe(3),Q=Symbol.for("lit-noChange"),x=Symbol.for("lit-nothing"),Ze=new WeakMap,q=F.createTreeWalker(F,129);function et(r,e){if(!Le(r)||!r.hasOwnProperty("raw"))throw Error("invalid template strings array");return Fe!==void 0?Fe.createHTML(e):e}var Et=(r,e)=>{let t=r.length-1,i=[],a,s=e===2?"<svg>":e===3?"<math>":"",o=ae;for(let _=0;_<t;_++){let p=r[_],f,m,l=-1,g=0;for(;g<p.length&&(o.lastIndex=g,m=o.exec(p),m!==null);)g=o.lastIndex,o===ae?m[1]==="!--"?o=Qe:m[1]!==void 0?o=Ve:m[2]!==void 0?(Xe.test(m[2])&&(a=RegExp("</"+m[2],"g")),o=j):m[3]!==void 0&&(o=j):o===j?m[0]===">"?(o=a??ae,l=-1):m[1]===void 0?l=-2:(l=o.lastIndex-m[2].length,f=m[1],o=m[3]===void 0?j:m[3]==='"'?Ke:Ge):o===Ke||o===Ge?o=j:o===Qe||o===Ve?o=ae:(o=j,a=void 0);let n=o===j&&r[_+1].startsWith("/>")?" ":"";s+=o===ae?p+Ct:l>=0?(i.push(f),p.slice(0,l)+Je+p.slice(l)+I+n):p+I+(l===-2?_:n)}return[et(r,s+(r[t]||"<?>")+(e===2?"</svg>":e===3?"</math>":"")),i]},ne=class r{constructor({strings:e,_$litType$:t},i){let a;this.parts=[];let s=0,o=0,_=e.length-1,p=this.parts,[f,m]=Et(e,t);if(this.el=r.createElement(f,i),q.currentNode=this.el.content,t===2||t===3){let l=this.el.content.firstChild;l.replaceWith(...l.childNodes)}for(;(a=q.nextNode())!==null&&p.length<_;){if(a.nodeType===1){if(a.hasAttributes())for(let l of a.getAttributeNames())if(l.endsWith(Je)){let g=m[o++],n=a.getAttribute(l).split(I),y=/([.?@])?(.*)/.exec(g);p.push({type:1,index:s,name:y[2],strings:n,ctor:y[1]==="."?Ee:y[1]==="?"?Be:y[1]==="@"?Ne:K}),a.removeAttribute(l)}else l.startsWith(I)&&(p.push({type:6,index:s}),a.removeAttribute(l));if(Xe.test(a.tagName)){let l=a.textContent.split(I),g=l.length-1;if(g>0){a.textContent=fe?fe.emptyScript:"";for(let n=0;n<g;n++)a.append(l[n],se()),q.nextNode(),p.push({type:2,index:++s});a.append(l[g],se())}}}else if(a.nodeType===8)if(a.data===Ye)p.push({type:2,index:s});else{let l=-1;for(;(l=a.data.indexOf(I,l+1))!==-1;)p.push({type:7,index:s}),l+=I.length-1}s++}}static createElement(e,t){let i=F.createElement("template");return i.innerHTML=e,i}};function G(r,e,t=r,i){if(e===Q)return e;let a=i!==void 0?t._$Co?.[i]:t._$Cl,s=oe(e)?void 0:e._$litDirective$;return a?.constructor!==s&&(a?._$AO?.(!1),s===void 0?a=void 0:(a=new s(r),a._$AT(r,t,i)),i!==void 0?(t._$Co??=[])[i]=a:t._$Cl=a),a!==void 0&&(e=G(r,a._$AS(r,e.values),a,i)),e}var ke=class{constructor(e,t){this._$AV=[],this._$AN=void 0,this._$AD=e,this._$AM=t}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(e){let{el:{content:t},parts:i}=this._$AD,a=(e?.creationScope??F).importNode(t,!0);q.currentNode=a;let s=q.nextNode(),o=0,_=0,p=i[0];for(;p!==void 0;){if(o===p.index){let f;p.type===2?f=new le(s,s.nextSibling,this,e):p.type===1?f=new p.ctor(s,p.name,p.strings,this,e):p.type===6&&(f=new Re(s,this,e)),this._$AV.push(f),p=i[++_]}o!==p?.index&&(s=q.nextNode(),o++)}return q.currentNode=F,a}p(e){let t=0;for(let i of this._$AV)i!==void 0&&(i.strings!==void 0?(i._$AI(e,i,t),t+=i.strings.length-2):i._$AI(e[t])),t++}},le=class r{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(e,t,i,a){this.type=2,this._$AH=x,this._$AN=void 0,this._$AA=e,this._$AB=t,this._$AM=i,this.options=a,this._$Cv=a?.isConnected??!0}get parentNode(){let e=this._$AA.parentNode,t=this._$AM;return t!==void 0&&e?.nodeType===11&&(e=t.parentNode),e}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(e,t=this){e=G(this,e,t),oe(e)?e===x||e==null||e===""?(this._$AH!==x&&this._$AR(),this._$AH=x):e!==this._$AH&&e!==Q&&this._(e):e._$litType$!==void 0?this.$(e):e.nodeType!==void 0?this.T(e):kt(e)?this.k(e):this._(e)}O(e){return this._$AA.parentNode.insertBefore(e,this._$AB)}T(e){this._$AH!==e&&(this._$AR(),this._$AH=this.O(e))}_(e){this._$AH!==x&&oe(this._$AH)?this._$AA.nextSibling.data=e:this.T(F.createTextNode(e)),this._$AH=e}$(e){let{values:t,_$litType$:i}=e,a=typeof i=="number"?this._$AC(e):(i.el===void 0&&(i.el=ne.createElement(et(i.h,i.h[0]),this.options)),i);if(this._$AH?._$AD===a)this._$AH.p(t);else{let s=new ke(a,this),o=s.u(this.options);s.p(t),this.T(o),this._$AH=s}}_$AC(e){let t=Ze.get(e.strings);return t===void 0&&Ze.set(e.strings,t=new ne(e)),t}k(e){Le(this._$AH)||(this._$AH=[],this._$AR());let t=this._$AH,i,a=0;for(let s of e)a===t.length?t.push(i=new r(this.O(se()),this.O(se()),this,this.options)):i=t[a],i._$AI(s),a++;a<t.length&&(this._$AR(i&&i._$AB.nextSibling,a),t.length=a)}_$AR(e=this._$AA.nextSibling,t){for(this._$AP?.(!1,!0,t);e!==this._$AB;){let i=qe(e).nextSibling;qe(e).remove(),e=i}}setConnected(e){this._$AM===void 0&&(this._$Cv=e,this._$AP?.(e))}},K=class{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(e,t,i,a,s){this.type=1,this._$AH=x,this._$AN=void 0,this.element=e,this.name=t,this._$AM=a,this.options=s,i.length>2||i[0]!==""||i[1]!==""?(this._$AH=Array(i.length-1).fill(new String),this.strings=i):this._$AH=x}_$AI(e,t=this,i,a){let s=this.strings,o=!1;if(s===void 0)e=G(this,e,t,0),o=!oe(e)||e!==this._$AH&&e!==Q,o&&(this._$AH=e);else{let _=e,p,f;for(e=s[0],p=0;p<s.length-1;p++)f=G(this,_[i+p],t,p),f===Q&&(f=this._$AH[p]),o||=!oe(f)||f!==this._$AH[p],f===x?e=x:e!==x&&(e+=(f??"")+s[p+1]),this._$AH[p]=f}o&&!a&&this.j(e)}j(e){e===x?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,e??"")}},Ee=class extends K{constructor(){super(...arguments),this.type=3}j(e){this.element[this.name]=e===x?void 0:e}},Be=class extends K{constructor(){super(...arguments),this.type=4}j(e){this.element.toggleAttribute(this.name,!!e&&e!==x)}},Ne=class extends K{constructor(e,t,i,a,s){super(e,t,i,a,s),this.type=5}_$AI(e,t=this){if((e=G(this,e,t,0)??x)===Q)return;let i=this._$AH,a=e===x&&i!==x||e.capture!==i.capture||e.once!==i.once||e.passive!==i.passive,s=e!==x&&(i===x||a);a&&this.element.removeEventListener(this.name,this,i),s&&this.element.addEventListener(this.name,this,e),this._$AH=e}handleEvent(e){typeof this._$AH=="function"?this._$AH.call(this.options?.host??this.element,e):this._$AH.handleEvent(e)}},Re=class{constructor(e,t,i){this.element=e,this.type=6,this._$AN=void 0,this._$AM=t,this.options=i}get _$AU(){return this._$AM._$AU}_$AI(e){G(this,e)}};var Bt=ze.litHtmlPolyfillSupport;Bt?.(ne,le),(ze.litHtmlVersions??=[]).push("3.3.3");var tt=(r,e,t)=>{let i=t?.renderBefore??e,a=i._$litPart$;if(a===void 0){let s=t?.renderBefore??null;i._$litPart$=a=new le(e.insertBefore(se(),s),s,void 0,t??{})}return a._$AI(r),a};var Me=globalThis,L=class extends T{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){let e=super.createRenderRoot();return this.renderOptions.renderBefore??=e.firstChild,e}update(e){let t=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(e),this._$Do=tt(t,this.renderRoot,this.renderOptions)}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(!0)}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(!1)}render(){return Q}};L._$litElement$=!0,L.finalized=!0,Me.litElementHydrateSupport?.({LitElement:L});var Nt=Me.litElementPolyfillSupport;Nt?.({LitElement:L});(Me.litElementVersions??=[]).push("4.2.2");var Rt={attribute:!0,type:String,converter:re,reflect:!1,hasChanged:_e},zt=(r=Rt,e,t)=>{let{kind:i,metadata:a}=t,s=globalThis.litPropertyMetadata.get(a);if(s===void 0&&globalThis.litPropertyMetadata.set(a,s=new Map),i==="setter"&&((r=Object.create(r)).wrapped=!0),s.set(t.name,r),i==="accessor"){let{name:o}=t;return{set(_){let p=e.get.call(this);e.set.call(this,_),this.requestUpdate(o,p,r,!0,_)},init(_){return _!==void 0&&this.C(o,void 0,r,_),_}}}if(i==="setter"){let{name:o}=t;return function(_){let p=this[o];e.call(this,_),this.requestUpdate(o,p,r,!0,_)}}throw Error("Unsupported decorator location: "+i)};function Z(r){return(e,t)=>typeof t=="object"?zt(r,e,t):((i,a,s)=>{let o=a.hasOwnProperty(s);return a.constructor.createProperty(s,i),o?Object.getOwnPropertyDescriptor(a,s):void 0})(r,e,t)}function P(r){return Z({...r,state:!0,attribute:!1})}var it=te`
   :host {
     display: block;
   }
@@ -261,6 +261,12 @@
     text-align: center;
   }
 
+  .col-area-th,
+  .col-area-td {
+    min-width: 100px;
+    text-align: left;
+  }
+
   .col-note-th,
   .col-note-td {
     min-width: 100px;
@@ -306,6 +312,18 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .device-area {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .area-icon {
+    --mdc-icon-size: 13px;
+    color: var(--secondary-text-color);
+    flex-shrink: 0;
   }
 
   /* Battery level bar and percent */
@@ -398,6 +416,33 @@
   .type-badge ha-icon {
     --mdc-icon-size: 14px;
     color: var(--secondary-text-color);
+  }
+
+  /* Area Badge */
+  .area-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--secondary-background-color, rgba(127, 127, 127, 0.12));
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--primary-text-color);
+    white-space: nowrap;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .area-badge-icon {
+    --mdc-icon-size: 14px;
+    color: var(--secondary-text-color);
+    flex-shrink: 0;
+  }
+
+  .area-empty {
+    color: var(--disabled-text-color, #9e9e9e);
   }
 
   /* Last Replaced cell */
@@ -568,23 +613,23 @@
     padding: 4px 10px;
     font-size: 0.75rem;
   }
-`;var te={en:{card_title:"Battery Notes",col_name:"Device",col_battery:"Battery",col_type:"Type",col_last_replaced:"Last Replaced",col_status:"Status",col_note:"Note",col_actions:"Actions",status_low:"Low",status_ok:"OK",status_critical:"Critical",status_unavailable:"Unavailable",action_mark_replaced:"Mark replaced",action_replaced:"Replaced",confirm_replace_title:"Confirm Battery Replacement",confirm_replace_msg:'Mark battery as replaced for "{name}"?',replaced_success:"Battery replacement recorded",search_placeholder:"Search devices, battery type...",filter_all:"All",filter_low:"Low",filter_critical:"Critical",summary_total:"Total",summary_low:"Low",summary_ok:"Good",no_devices:"No Battery Notes devices found.",no_results:"No matching devices found.",time_never:"Never",time_today:"Today",time_yesterday:"Yesterday",time_days_ago:"{n}d ago",time_weeks_ago:"{n}w ago",time_months_ago:"{n}m ago",time_years_ago:"{n}y ago",editor_title:"Title",editor_icon:"Icon",editor_show_header:"Show Header",editor_show_summary:"Show Summary Counters",editor_show_search:"Show Search Bar",editor_show_filters:"Show Quick Filter Pills",editor_compact:"Compact Layout",editor_confirm_replace:"Confirm Before Replacement",editor_sort_by:"Sort By",editor_sort_direction:"Sort Direction",editor_filter_low_only:"Show Low Battery Only",editor_filter_threshold:"Battery Threshold (%)",editor_hide_unavailable:"Hide Unavailable Devices",editor_columns:"Visible Columns",editor_col_name:"Name",editor_col_battery:"Battery Level",editor_col_type:"Battery Type",editor_col_last_replaced:"Last Replaced",editor_col_status:"Status Badge",editor_col_note:"Note",editor_col_actions:"Action Button",show_more:"Show {count} more",show_more_remaining:"Show {count} more ({remaining} remaining)",show_less:"Show less",show_all:"Show all ({count})",editor_initial_rows:"Initial rows to show",editor_step_rows:"Rows to add per click"},de:{card_title:"Batteriest\xE4nde",col_name:"Ger\xE4t",col_battery:"Batterie",col_type:"Typ",col_last_replaced:"Zuletzt gewechselt",col_status:"Status",col_note:"Notiz",col_actions:"Aktionen",status_low:"Niedrig",status_ok:"OK",status_critical:"Kritisch",status_unavailable:"Nicht verf\xFCgbar",action_mark_replaced:"Als gewechselt markieren",action_replaced:"Gewechselt",confirm_replace_title:"Batteriewechsel best\xE4tigen",confirm_replace_msg:'Batterie f\xFCr "{name}" wirklich als gewechselt markieren?',replaced_success:"Batteriewechsel gespeichert",search_placeholder:"Ger\xE4t oder Batterietyp suchen...",filter_all:"Alle",filter_low:"Niedrig",filter_critical:"Kritisch",summary_total:"Gesamt",summary_low:"Niedrig",summary_ok:"In Ordnung",no_devices:"Keine Battery Notes Ger\xE4te gefunden.",no_results:"Keine passenden Ger\xE4te gefunden.",time_never:"Nie",time_today:"Heute",time_yesterday:"Gestern",time_days_ago:"Vor {n} Tagen",time_weeks_ago:"Vor {n} Wochen",time_months_ago:"Vor {n} Monaten",time_years_ago:"Vor {n} Jahren",editor_title:"Titel",editor_icon:"Icon",editor_show_header:"Kopfzeile anzeigen",editor_show_summary:"Zusammenfassung (Z\xE4hler) anzeigen",editor_show_search:"Suchleiste anzeigen",editor_show_filters:"Filter-Buttons anzeigen",editor_compact:"Kompakte Tabelle",editor_confirm_replace:"Best\xE4tigungsdialog vor Wechsel",editor_sort_by:"Sortieren nach",editor_sort_direction:"Sortierrichtung",editor_filter_low_only:"Nur schwache Batterien anzeigen",editor_filter_threshold:"Schwellenwert (%)",editor_hide_unavailable:"Nicht verf\xFCgbare ausblenden",editor_columns:"Sichtbare Spalten",editor_col_name:"Name",editor_col_battery:"Batteriestand",editor_col_type:"Batterietyp",editor_col_last_replaced:"Zuletzt gewechselt",editor_col_status:"Status",editor_col_note:"Notiz",editor_col_actions:"Aktions-Button",show_more:"Weitere {count} anzeigen",show_more_remaining:"Weitere {count} anzeigen (noch {remaining})",show_less:"Weniger anzeigen",show_all:"Alle anzeigen ({count})",editor_initial_rows:"Anzahl Zeilen am Anfang",editor_step_rows:"Weitere Zeilen pro Klick"}};function c(r,t="en",e){let i=t.startsWith("de")?"de":"en",s=te[i]?.[r]||te.en?.[r]||r;if(e)for(let[a,o]of Object.entries(e))s=s.replace(new RegExp(`\\{${a}\\}`,"g"),String(o));return s}var Le=new Set(["batterie fast leer","batterie-typ","batterie - typ","batterietyp","letzter batteriewechsel","batterie zuletzt ersetzt","batterie ersetzt","batterie+","batterie","batterie plus","batterie-plus","battery low","battery type","battery last replaced","battery replaced","battery+","battery","battery plus","battery-plus","battery status","batteriestatus","batterie status"]);function S(r){if(!r)return!0;let t=r.toLowerCase().trim();return!!(Le.has(t)||/^(?:battery|batterie)[_\-\s]*(?:type|typ|low|fast[_\-\s]*leer|replaced|ersetzt|last[_\-\s]*replaced|plus|\+|status)*(?:[_\-\s]*\d+)?$/i.test(t))}function _t(r){return r?r.replace(/\s*(?:[-–—:]|\()\s*(?:Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Batterie Plus|Batterie-Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery Status|Batteriestatus|Batterie Status|Battery|Batterie)\s*\)?$/i,"").replace(/\s+(?:Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Batterie Plus|Batterie-Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery Status|Batteriestatus|Batterie Status|Battery|Batterie)$/i,"").replace(/[\s\-_:–—()]+$/g,"").trim():""}function ze(r){if(!r)return"";let t=_t(r);if(!t)return"";let e=/(?:\s+|-)(?:Rauchalarm|Rauch|Sabotagekontakt|Sabotage|Status|State|Alarm|Detection)$/i;for(;e.test(t);){let i=t.replace(e,"").trim();if(i.length>=3&&!S(i))t=i;else break}return t}function Pe(r){if(!r)return"";let t=r.replace(/([_-])0+([1-9]\d*)\b/g,"$1$2");return t=t.replace(/([_-])(?:sbs\d+[a-f0-9]+|[a-f0-9]*[a-f][a-f0-9]{5,})/gi,""),t=t.replace(/^_+|_+$/g,"").replace(/_+/g," "),t.replace(/\b\w/g,e=>e.toUpperCase()).trim()||r}function ut(r){return(r.includes(".")?r.split(".")[1]:r).replace(/(?:_|-)(?:battery_last_replaced|letzter_batteriewechsel|batterie_zuletzt_ersetzt)$/i,"").replace(/(?:_|-)(?:battery_type|batterie_typ|batterie-typ|batterietyp|batterie_art)$/i,"").replace(/(?:_|-)(?:battery_plus_low|battery_low|batterie_fast_leer|batterie_schwach|niedriger_batteriestand)$/i,"").replace(/(?:_|-)(?:battery_replaced|batterie_ersetzt)$/i,"").replace(/(?:_|-)(?:battery_plus|batterie_plus|battery\+|batterie\+)$/i,"").replace(/(?:_|-)(?:battery_level|batteriestand|batterie_stand|battery|batterie)$/i,"").replace(/_battery$/,"").replace(/_batterie$/,"")}function ee(r,t){if(!r.entity_id.startsWith("sensor."))return!1;if(t?.translation_key==="battery_type")return!0;let e=r.entity_id.toLowerCase();return e.endsWith("_battery_type")||e.endsWith("_batterie_typ")||e.endsWith("_batterie-typ")||e.endsWith("_batterie_art")||e.endsWith("_batterietyp")||e==="sensor.battery_type"||e==="sensor.batterie_typ"||/^sensor\.batterie[_\-]typ(?:_\d+)?$/i.test(e)||/^sensor\.battery[_\-]type(?:_\d+)?$/i.test(e)||r.attributes.battery_type!==void 0&&!r.attributes.device_class}function ie(r,t){if(!r.entity_id.startsWith("sensor."))return!1;if(t?.translation_key==="battery_plus")return!0;let e=r.entity_id.toLowerCase();return e.endsWith("_battery_plus")||e.endsWith("_batterie_plus")||e.endsWith("_battery+")||e.endsWith("_batterie+")||e==="sensor.battery_plus"||e==="sensor.batterie_plus"}function re(r,t){if(!r.entity_id.startsWith("sensor."))return!1;if(t?.translation_key==="battery_last_replaced")return!0;let e=r.entity_id.toLowerCase();return e.endsWith("_battery_last_replaced")||e.endsWith("_letzter_batteriewechsel")||e.endsWith("_batterie_zuletzt_ersetzt")}function se(r,t){if(!r.entity_id.startsWith("binary_sensor."))return!1;if(t?.translation_key==="battery_low"||t?.translation_key==="battery_plus_low"||t?.platform==="battery_notes")return!0;let e=r.entity_id.toLowerCase();return e.endsWith("_battery_low")||e.endsWith("_battery_plus_low")||e.endsWith("_batterie_fast_leer")||e.endsWith("_batterie_schwach")||e.endsWith("_niedriger_batteriestand")}function ae(r,t){if(!r.entity_id.startsWith("button."))return!1;if(t?.translation_key==="battery_replaced")return!0;let e=r.entity_id.toLowerCase();return e.endsWith("_battery_replaced")||e.endsWith("_batterie_ersetzt")}function oe(r,t,e){if(!r||!r.states)return[];let i=r.states,s=[],a=new Map,o=new Map;for(let[g,l]of Object.entries(i)){let f=l.attributes||{},n=e?.entities?.get(g)||r.entities?.[g];if(!(n?.platform==="battery_notes"||ee(l,n)||ie(l,n)||re(l,n)||se(l,n)||ae(l,n)||f.battery_type!==void 0||f.battery_type_and_quantity!==void 0))continue;let y=n?.device_id||f.device_id,w=ut(g);f.source_entity_id&&(S(w)||!w)&&(w=ut(f.source_entity_id)),f.device_name&&(S(w)||!w)&&(w=ut(f.device_name));let C=w,$=null;if(y&&a.has(y)?$=a.get(y):C&&!S(C)&&o.has(C)&&($=o.get(C)),!$)$={id:y?`dev_${y}`:`base_${C}`,deviceId:y,baseName:C,entities:[]},s.push($);else if(y&&!$.deviceId)if(a.has(y)){let D=a.get(y);D!==$&&(D.entities.push(...$.entities),s=s.filter(m=>m!==$),$=D)}else $.deviceId=y;y&&a.set(y,$),C&&!S(C)&&o.set(C,$),$.entities.push(l)}let u=[],p=new Set(t.exclude_entities||[]),_=s;if(t.entities&&t.entities.length>0){let g=new Set(t.entities.map(f=>ut(f))),l=new Set(t.entities);_=_.filter(f=>g.has(f.baseName)||f.deviceId&&l.has(f.deviceId)||f.entities.some(n=>l.has(n.entity_id)))}for(let g of _){let l=g.entities,f=g.deviceId,n=g.baseName,b=n.replace(/([_-])0*[0-9a-f]{6,}\b/i,"");if(p.has(n)||f&&p.has(f)||l.some(d=>p.has(d.entity_id)))continue;let y=l.find(d=>ee(d,e?.entities?.get(d.entity_id)||r.entities?.[d.entity_id])),w=l.find(d=>ie(d,e?.entities?.get(d.entity_id)||r.entities?.[d.entity_id])),C=l.find(d=>re(d,e?.entities?.get(d.entity_id)||r.entities?.[d.entity_id])),$=l.find(d=>se(d,e?.entities?.get(d.entity_id)||r.entities?.[d.entity_id])),D=l.find(d=>ae(d,e?.entities?.get(d.entity_id)||r.entities?.[d.entity_id])),m={};for(let d of l)d.attributes&&Object.assign(m,d.attributes);let ce=!!(t.entities&&t.entities.length>0),de=!!w,pe=!!(y&&(m.battery_type!==void 0||m.battery_type_and_quantity!==void 0||y.state&&y.state!=="unknown"&&y.state!=="unavailable"))||m.battery_type!==void 0||m.battery_type_and_quantity!==void 0||l.some(d=>(e?.entities?.get(d.entity_id)||r.entities?.[d.entity_id])?.platform==="battery_notes");if(!ce&&!de&&!pe)continue;let P=w||y||l[0],j,zt=[`sensor.${n}_battery`,`sensor.${n}_batterie`,`sensor.${n}_battery_level`,`sensor.${n}_batteriestand`,`sensor.${n}_batterie_stand`,`sensor.${n}`];b&&b!==n&&zt.push(`sensor.${b}_battery`,`sensor.${b}_batterie`,`sensor.${b}_battery_level`,`sensor.${b}_batteriestand`,`sensor.${b}`);for(let d of zt)if(i[d]){j=i[d];break}let M=null;if(w&&!isNaN(parseFloat(w.state)))M=parseFloat(w.state);else if(m.source_entity_id&&i[m.source_entity_id]&&!isNaN(parseFloat(i[m.source_entity_id].state)))M=parseFloat(i[m.source_entity_id].state);else if(j&&!isNaN(parseFloat(j.state)))M=parseFloat(j.state);else if(m.battery_last_reported_level!==void 0&&!isNaN(Number(m.battery_last_reported_level)))M=Number(m.battery_last_reported_level);else if(f){let d=e?.entities;for(let[B,A]of Object.entries(i)){if(!B.startsWith("sensor."))continue;if((d?.get(B)||r.entities?.[B])?.device_id===f&&A&&A.attributes?.device_class==="battery"&&!isNaN(parseFloat(A.state))){M=parseFloat(A.state);break}}}let H=f?e?.devices?.get(f)||r.devices?.[f]:void 0,yt=H?.area_id||(P?e?.entities?.get(P.entity_id)?.area_id||r.entities?.[P.entity_id]?.area_id:void 0),K=yt?e?.areas?.get(yt)?.name||r.areas?.[yt]?.name:void 0,v="";if(t.device_names&&(v=t.device_names[n]||(f?t.device_names[f]:"")||""),!v&&H?.name_by_user&&!S(H.name_by_user)&&(v=H.name_by_user),!v&&H?.name&&!S(H.name)&&(v=H.name),!v&&m.device_name&&!S(m.device_name)&&(v=m.device_name),!v&&P){let d=e?.entities?.get(P.entity_id)||r.entities?.[P.entity_id];d?.name&&!S(d.name)&&(v=d.name)}if(!v&&j?.attributes?.friendly_name){let d=_t(j.attributes.friendly_name);d&&!S(d)&&(v=d)}if(!v)for(let d of l){let B=d.attributes?.friendly_name;if(B){let A=_t(B);if(A&&!S(A)){v=A;break}}}if(!v&&m.source_entity_id&&i[m.source_entity_id]?.attributes?.friendly_name){let d=_t(i[m.source_entity_id].attributes.friendly_name);d&&!S(d)&&(v=d)}if(!v&&n&&!S(n)){let d=n.toLowerCase(),B=b.toLowerCase();for(let[A,mt]of Object.entries(i))if(!l.some(ot=>ot.entity_id===A)&&mt.attributes?.friendly_name){let ot=A.includes(".")?A.split(".")[1].toLowerCase():A.toLowerCase();if(ot.startsWith(d)||B.length>=6&&ot.startsWith(B)){let vt=ze(mt.attributes.friendly_name);if(vt&&!S(vt)){v=vt;break}}}}if(K&&(v?v.toLowerCase().includes(K.toLowerCase())||/^(?:smoke[_\-\s]*alarm|rauchmelder|sensor|alarm)$/i.test(v.trim())&&(v=`${K} ${v}`):v=`${K} Rauchmelder`),!v&&!S(n)&&(v=Pe(n)),S(v))continue;let q=m.battery_type||"";!q&&y&&y.state&&y.state!=="unknown"&&y.state!=="unavailable"&&(q=y.state);let bt=Number(m.battery_quantity)||1,gt=m.battery_type_and_quantity||"";!gt&&q&&(gt=bt>1?`${bt}x ${q}`:q);let Pt=null,Mt="",Z=C?.state||m.battery_last_replaced;if(Z&&Z!=="unavailable"&&Z!=="unknown"){Mt=Z;let d=new Date(Z);isNaN(d.getTime())||(Pt=d)}let he=t.filter_threshold??20,ue=$?.state==="on"||m.battery_low===!0||M!==null&&M<=he,L=D?.entity_id;!L&&i[`button.${n}_battery_replaced`]?L=`button.${n}_battery_replaced`:!L&&i[`button.${n}_batterie_ersetzt`]?L=`button.${n}_batterie_ersetzt`:!L&&b&&i[`button.${b}_battery_replaced`]?L=`button.${b}_battery_replaced`:!L&&b&&i[`button.${b}_batterie_ersetzt`]&&(L=`button.${b}_batterie_ersetzt`);let _e=y?.state==="unavailable"||w?.state==="unavailable";u.push({id:g.id,deviceId:f,sourceEntityId:m.source_entity_id,entityId:P.entity_id,name:v,area:K,batteryLevel:M,batteryType:q,batteryQuantity:bt,batteryTypeAndQuantity:gt||"-",lastReplaced:Pt,lastReplacedStr:Mt,lastReported:m.battery_last_reported?new Date(m.battery_last_reported):null,isLow:ue,note:m.note,buttonEntityId:L,isUnavailable:_e,state:P.state})}return u}function ne(r,t,e,i,s){let a=typeof e=="number"?e:Number(e),o=!isNaN(a)&&a>0&&typeof e!="boolean"?Math.floor(a):0,u=typeof i=="number"?i:Number(i),p=!isNaN(u)&&u>0&&typeof i!="boolean"?Math.floor(u):o>0?o:10,_=r;o>0&&(_=t>0?t:o),s&&s>0&&(_=Math.min(_,s)),_=Math.min(r,_);let g=_,l=Math.max(0,r-g),f=Math.min(p,l),n=l>0&&(!s||g<s),b=o>0&&g>o;return{effectiveLimit:_,remainingCount:l,nextStep:f,canShowMore:n,canShowLess:b}}function ft(r){let t={...r};if(t.initial_rows!==void 0){let e=Number(t.initial_rows);typeof t.initial_rows=="boolean"||isNaN(e)||e<=0?delete t.initial_rows:t.initial_rows=Math.floor(e)}if(t.step_rows!==void 0){let e=Number(t.step_rows);typeof t.step_rows=="boolean"||isNaN(e)||e<=0?delete t.step_rows:t.step_rows=Math.floor(e)}return t.title!==void 0&&typeof t.title!="string"&&delete t.title,t.icon!==void 0&&typeof t.icon!="string"&&delete t.icon,t}function le(r){if(r.type==="checkbox"||r.tagName==="HA-SWITCH"||r.tagName==="HA-CHECKBOX")return!!r.checked;if(r.type==="number"){let e=r.value;if(e===""||e===null||e===void 0)return;let i=Number(e);return isNaN(i)||i<=0?void 0:Math.floor(i)}let t=r.value;if(!(typeof t=="string"&&t.trim()===""))return t}var G=class extends N{setConfig(t){this._config=ft(t)}_valueChanged(t,e,i=!1){if(!this._config)return;let s=t.target,a=le(s),o;if(i){let p={name:!0,battery:!0,type:!0,last_replaced:!0,status:!0,note:!1,actions:!0,...this._config.columns||{},[e]:!!a};o={...this._config,columns:p}}else o={...this._config},a===void 0?delete o[e]:o[e]=a;o.type||(o.type="custom:battery-notes-card"),this._config=o;let u=new CustomEvent("config-changed",{detail:{config:this._config},bubbles:!0,composed:!0});this.dispatchEvent(u)}render(){if(!this._config)return h``;let t=this.hass?.language||"en",e={name:!0,battery:!0,type:!0,last_replaced:!0,status:!0,note:!1,actions:!0,...this._config.columns||{}};return h`
+`;var rt={en:{card_title:"Battery Notes",col_name:"Device",col_area:"Area",col_battery:"Battery",col_type:"Type",col_last_replaced:"Last Replaced",col_status:"Status",col_note:"Note",col_actions:"Actions",status_low:"Low",status_ok:"OK",status_critical:"Critical",status_unavailable:"Unavailable",action_mark_replaced:"Mark replaced",action_replaced:"Replaced",confirm_replace_title:"Confirm Battery Replacement",confirm_replace_msg:'Mark battery as replaced for "{name}"?',replaced_success:"Battery replacement recorded",search_placeholder:"Search devices, battery type...",filter_all:"All",filter_low:"Low",filter_critical:"Critical",summary_total:"Total",summary_low:"Low",summary_ok:"Good",no_devices:"No Battery Notes devices found.",no_results:"No matching devices found.",time_never:"Never",time_today:"Today",time_yesterday:"Yesterday",time_days_ago:"{n}d ago",time_weeks_ago:"{n}w ago",time_months_ago:"{n}m ago",time_years_ago:"{n}y ago",editor_title:"Title",editor_icon:"Icon",editor_show_header:"Show Header",editor_show_summary:"Show Summary Counters",editor_show_search:"Show Search Bar",editor_show_filters:"Show Quick Filter Pills",editor_compact:"Compact Layout",editor_confirm_replace:"Confirm Before Replacement",editor_sort_by:"Sort By",editor_sort_direction:"Sort Direction",editor_filter_low_only:"Show Low Battery Only",editor_filter_threshold:"Battery Threshold (%)",editor_hide_unavailable:"Hide Unavailable Devices",editor_columns:"Visible Columns",editor_col_name:"Name",editor_col_area:"Area",editor_col_battery:"Battery Level",editor_col_type:"Battery Type",editor_col_last_replaced:"Last Replaced",editor_col_status:"Status Badge",editor_col_note:"Note",editor_col_actions:"Action Button",editor_show_area:"Show Area Subtitle",editor_always_show_area:"Always Show Area (even if in name)",show_more:"Show {count} more",show_more_remaining:"Show {count} more ({remaining} remaining)",show_less:"Show less",show_all:"Show all ({count})",editor_initial_rows:"Initial rows to show",editor_step_rows:"Rows to add per click"},de:{card_title:"Batteriest\xE4nde",col_name:"Ger\xE4t",col_area:"Bereich",col_battery:"Batterie",col_type:"Typ",col_last_replaced:"Zuletzt gewechselt",col_status:"Status",col_note:"Notiz",col_actions:"Aktionen",status_low:"Niedrig",status_ok:"OK",status_critical:"Kritisch",status_unavailable:"Nicht verf\xFCgbar",action_mark_replaced:"Als gewechselt markieren",action_replaced:"Gewechselt",confirm_replace_title:"Batteriewechsel best\xE4tigen",confirm_replace_msg:'Batterie f\xFCr "{name}" wirklich als gewechselt markieren?',replaced_success:"Batteriewechsel gespeichert",search_placeholder:"Ger\xE4t oder Batterietyp suchen...",filter_all:"Alle",filter_low:"Niedrig",filter_critical:"Kritisch",summary_total:"Gesamt",summary_low:"Niedrig",summary_ok:"In Ordnung",no_devices:"Keine Battery Notes Ger\xE4te gefunden.",no_results:"Keine passenden Ger\xE4te gefunden.",time_never:"Nie",time_today:"Heute",time_yesterday:"Gestern",time_days_ago:"Vor {n} Tagen",time_weeks_ago:"Vor {n} Wochen",time_months_ago:"Vor {n} Monaten",time_years_ago:"Vor {n} Jahren",editor_title:"Titel",editor_icon:"Icon",editor_show_header:"Kopfzeile anzeigen",editor_show_summary:"Zusammenfassung (Z\xE4hler) anzeigen",editor_show_search:"Suchleiste anzeigen",editor_show_filters:"Filter-Buttons anzeigen",editor_compact:"Kompakte Tabelle",editor_confirm_replace:"Best\xE4tigungsdialog vor Wechsel",editor_sort_by:"Sortieren nach",editor_sort_direction:"Sortierrichtung",editor_filter_low_only:"Nur schwache Batterien anzeigen",editor_filter_threshold:"Schwellenwert (%)",editor_hide_unavailable:"Nicht verf\xFCgbare ausblenden",editor_columns:"Sichtbare Spalten",editor_col_name:"Name",editor_col_area:"Bereich",editor_col_battery:"Batteriestand",editor_col_type:"Batterietyp",editor_col_last_replaced:"Zuletzt gewechselt",editor_col_status:"Status",editor_col_note:"Notiz",editor_col_actions:"Aktions-Button",editor_show_area:"Bereichs-Untertitel anzeigen",editor_always_show_area:"Bereich immer anzeigen (auch wenn im Namen)",show_more:"Weitere {count} anzeigen",show_more_remaining:"Weitere {count} anzeigen (noch {remaining})",show_less:"Weniger anzeigen",show_all:"Alle anzeigen ({count})",editor_initial_rows:"Anzahl Zeilen am Anfang",editor_step_rows:"Weitere Zeilen pro Klick"}};function d(r,e="en",t){let i=e.startsWith("de")?"de":"en",a=rt[i]?.[r]||rt.en?.[r]||r;if(t)for(let[s,o]of Object.entries(t))a=a.replace(new RegExp(`\\{${s}\\}`,"g"),String(o));return a}var Lt=new Set(["batterie fast leer","batterie-typ","batterie - typ","batterietyp","letzter batteriewechsel","batterie zuletzt ersetzt","batterie ersetzt","batterie+","batterie","batterie plus","batterie-plus","battery low","battery type","battery last replaced","battery replaced","battery+","battery","battery plus","battery-plus","battery status","batteriestatus","batterie status"]);function A(r){if(!r)return!0;let e=r.toLowerCase().trim();return!!(Lt.has(e)||/^(?:battery|batterie)[_\-\s]*(?:type|typ|low|fast[_\-\s]*leer|replaced|ersetzt|last[_\-\s]*replaced|plus|\+|status)*(?:[_\-\s]*\d+)?$/i.test(e))}function ge(r){return r?r.replace(/\s*(?:[-–—:]|\()\s*(?:Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Batterie Plus|Batterie-Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery Status|Batteriestatus|Batterie Status|Battery|Batterie)\s*\)?$/i,"").replace(/\s+(?:Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Batterie Plus|Batterie-Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery Status|Batteriestatus|Batterie Status|Battery|Batterie)$/i,"").replace(/[\s\-_:–—()]+$/g,"").trim():""}function Pt(r){if(!r)return"";let e=ge(r);if(!e)return"";let t=/(?:\s+|-)(?:Rauchalarm|Rauch|Sabotagekontakt|Sabotage|Status|State|Alarm|Detection)$/i;for(;t.test(e);){let i=e.replace(t,"").trim();if(i.length>=3&&!A(i))e=i;else break}return e}function Mt(r){if(!r)return"";let e=r.replace(/([_-])0+([1-9]\d*)\b/g,"$1$2");return e=e.replace(/([_-])(?:sbs\d+[a-f0-9]+|[a-f0-9]*[a-f][a-f0-9]{5,})/gi,""),e=e.replace(/^_+|_+$/g,"").replace(/_+/g," "),e.replace(/\b\w/g,t=>t.toUpperCase()).trim()||r}function be(r){return(r.includes(".")?r.split(".")[1]:r).replace(/(?:_|-)(?:battery_last_replaced|letzter_batteriewechsel|batterie_zuletzt_ersetzt)$/i,"").replace(/(?:_|-)(?:battery_type|batterie_typ|batterie-typ|batterietyp|batterie_art)$/i,"").replace(/(?:_|-)(?:battery_plus_low|battery_low|batterie_fast_leer|batterie_schwach|niedriger_batteriestand)$/i,"").replace(/(?:_|-)(?:battery_replaced|batterie_ersetzt)$/i,"").replace(/(?:_|-)(?:battery_plus|batterie_plus|battery\+|batterie\+)$/i,"").replace(/(?:_|-)(?:battery_level|batteriestand|batterie_stand|battery|batterie)$/i,"").replace(/_battery$/,"").replace(/_batterie$/,"")}function at(r,e){if(!r.entity_id.startsWith("sensor."))return!1;if(e?.translation_key==="battery_type")return!0;let t=r.entity_id.toLowerCase();return t.endsWith("_battery_type")||t.endsWith("_batterie_typ")||t.endsWith("_batterie-typ")||t.endsWith("_batterie_art")||t.endsWith("_batterietyp")||t==="sensor.battery_type"||t==="sensor.batterie_typ"||/^sensor\.batterie[_\-]typ(?:_\d+)?$/i.test(t)||/^sensor\.battery[_\-]type(?:_\d+)?$/i.test(t)||r.attributes.battery_type!==void 0&&!r.attributes.device_class}function st(r,e){if(!r.entity_id.startsWith("sensor."))return!1;if(e?.translation_key==="battery_plus")return!0;let t=r.entity_id.toLowerCase();return t.endsWith("_battery_plus")||t.endsWith("_batterie_plus")||t.endsWith("_battery+")||t.endsWith("_batterie+")||t==="sensor.battery_plus"||t==="sensor.batterie_plus"}function ot(r,e){if(!r.entity_id.startsWith("sensor."))return!1;if(e?.translation_key==="battery_last_replaced")return!0;let t=r.entity_id.toLowerCase();return t.endsWith("_battery_last_replaced")||t.endsWith("_letzter_batteriewechsel")||t.endsWith("_batterie_zuletzt_ersetzt")}function nt(r,e){if(!r.entity_id.startsWith("binary_sensor."))return!1;if(e?.translation_key==="battery_low"||e?.translation_key==="battery_plus_low"||e?.platform==="battery_notes")return!0;let t=r.entity_id.toLowerCase();return t.endsWith("_battery_low")||t.endsWith("_battery_plus_low")||t.endsWith("_batterie_fast_leer")||t.endsWith("_batterie_schwach")||t.endsWith("_niedriger_batteriestand")}function lt(r,e){if(!r.entity_id.startsWith("button."))return!1;if(e?.translation_key==="battery_replaced")return!0;let t=r.entity_id.toLowerCase();return t.endsWith("_battery_replaced")||t.endsWith("_batterie_ersetzt")}function ct(r,e,t){if(!r||!r.states)return[];let i=r.states,a=[],s=new Map,o=new Map;for(let[m,l]of Object.entries(i)){let g=l.attributes||{},n=t?.entities?.get(m)||r.entities?.[m];if(!(n?.platform==="battery_notes"||at(l,n)||st(l,n)||ot(l,n)||nt(l,n)||lt(l,n)||g.battery_type!==void 0||g.battery_type_and_quantity!==void 0))continue;let b=n?.device_id||g.device_id,$=be(m);g.source_entity_id&&(A($)||!$)&&($=be(g.source_entity_id)),g.device_name&&(A($)||!$)&&($=be(g.device_name));let C=$,w=null;if(b&&s.has(b)?w=s.get(b):C&&!A(C)&&o.has(C)&&(w=o.get(C)),!w)w={id:b?`dev_${b}`:`base_${C}`,deviceId:b,baseName:C,entities:[]},a.push(w);else if(b&&!w.deviceId)if(s.has(b)){let O=s.get(b);O!==w&&(O.entities.push(...w.entities),a=a.filter(u=>u!==w),w=O)}else w.deviceId=b;b&&s.set(b,w),C&&!A(C)&&o.set(C,w),w.entities.push(l)}let _=[],p=new Set(e.exclude_entities||[]),f=a;if(e.entities&&e.entities.length>0){let m=new Set(e.entities.map(g=>be(g))),l=new Set(e.entities);f=f.filter(g=>m.has(g.baseName)||g.deviceId&&l.has(g.deviceId)||g.entities.some(n=>l.has(n.entity_id)))}for(let m of f){let l=m.entities,g=m.deviceId,n=m.baseName,y=n.replace(/([_-])0*[0-9a-f]{6,}\b/i,"");if(p.has(n)||g&&p.has(g)||l.some(c=>p.has(c.entity_id)))continue;let b=l.find(c=>at(c,t?.entities?.get(c.entity_id)||r.entities?.[c.entity_id])),$=l.find(c=>st(c,t?.entities?.get(c.entity_id)||r.entities?.[c.entity_id])),C=l.find(c=>ot(c,t?.entities?.get(c.entity_id)||r.entities?.[c.entity_id])),w=l.find(c=>nt(c,t?.entities?.get(c.entity_id)||r.entities?.[c.entity_id])),O=l.find(c=>lt(c,t?.entities?.get(c.entity_id)||r.entities?.[c.entity_id])),u={};for(let c of l)c.attributes&&Object.assign(u,c.attributes);let Y=!!(e.entities&&e.entities.length>0),ce=!!$,ht=!!(b&&(u.battery_type!==void 0||u.battery_type_and_quantity!==void 0||b.state&&b.state!=="unknown"&&b.state!=="unavailable"))||u.battery_type!==void 0||u.battery_type_and_quantity!==void 0||l.some(c=>(t?.entities?.get(c.entity_id)||r.entities?.[c.entity_id])?.platform==="battery_notes");if(!Y&&!ce&&!ht)continue;let D=$||b||l[0],E,Te=[`sensor.${n}_battery`,`sensor.${n}_batterie`,`sensor.${n}_battery_level`,`sensor.${n}_batteriestand`,`sensor.${n}_batterie_stand`,`sensor.${n}`];y&&y!==n&&Te.push(`sensor.${y}_battery`,`sensor.${y}_batterie`,`sensor.${y}_battery_level`,`sensor.${y}_batteriestand`,`sensor.${y}`);for(let c of Te)if(i[c]){E=i[c];break}let H=null;if($&&!isNaN(parseFloat($.state)))H=parseFloat($.state);else if(u.source_entity_id&&i[u.source_entity_id]&&!isNaN(parseFloat(i[u.source_entity_id].state)))H=parseFloat(i[u.source_entity_id].state);else if(E&&!isNaN(parseFloat(E.state)))H=parseFloat(E.state);else if(u.battery_last_reported_level!==void 0&&!isNaN(Number(u.battery_last_reported_level)))H=Number(u.battery_last_reported_level);else if(g){let c=t?.entities;for(let[S,k]of Object.entries(i)){if(!S.startsWith("sensor."))continue;if((c?.get(S)||r.entities?.[S])?.device_id===g&&k&&k.attributes?.device_class==="battery"&&!isNaN(parseFloat(k.state))){H=parseFloat(k.state);break}}}let z=g;if(!z)for(let c of l){let S=t?.entities?.get(c.entity_id)||r.entities?.[c.entity_id];if(S?.device_id){z=S.device_id;break}}if(!z&&u.source_entity_id){let c=t?.entities?.get(u.source_entity_id)||r.entities?.[u.source_entity_id];c?.device_id&&(z=c.device_id)}if(!z&&E){let c=t?.entities?.get(E.entity_id)||r.entities?.[E.entity_id];c?.device_id&&(z=c.device_id)}let U=z?t?.devices?.get(z)||r.devices?.[z]:void 0,B;if(D){let c=t?.entities?.get(D.entity_id)||r.entities?.[D.entity_id];c?.area_id&&(B=c.area_id)}if(!B)for(let c of l){let S=t?.entities?.get(c.entity_id)||r.entities?.[c.entity_id];if(S?.area_id){B=S.area_id;break}}if(B||(B=U?.area_id||void 0),!B&&u.source_entity_id){let c=t?.entities?.get(u.source_entity_id)||r.entities?.[u.source_entity_id];c?.area_id&&(B=c.area_id)}if(!B&&E){let c=t?.entities?.get(E.entity_id)||r.entities?.[E.entity_id];c?.area_id&&(B=c.area_id)}let W=B?t?.areas?.get(B)?.name||r.areas?.[B]?.name:void 0;!W&&(u.area||u.area_name)&&(W=u.area_name||u.area);let v="";if(e.device_names&&(v=e.device_names[n]||(g?e.device_names[g]:"")||""),!v&&U?.name_by_user&&!A(U.name_by_user)&&(v=U.name_by_user),!v&&U?.name&&!A(U.name)&&(v=U.name),!v&&u.device_name&&!A(u.device_name)&&(v=u.device_name),!v&&D){let c=t?.entities?.get(D.entity_id)||r.entities?.[D.entity_id];c?.name&&!A(c.name)&&(v=c.name)}if(!v&&E?.attributes?.friendly_name){let c=ge(E.attributes.friendly_name);c&&!A(c)&&(v=c)}if(!v)for(let c of l){let S=c.attributes?.friendly_name;if(S){let k=ge(S);if(k&&!A(k)){v=k;break}}}if(!v&&u.source_entity_id&&i[u.source_entity_id]?.attributes?.friendly_name){let c=ge(i[u.source_entity_id].attributes.friendly_name);c&&!A(c)&&(v=c)}if(!v&&n&&!A(n)){let c=n.toLowerCase(),S=y.toLowerCase();for(let[k,$e]of Object.entries(i))if(!l.some(de=>de.entity_id===k)&&$e.attributes?.friendly_name){let de=k.includes(".")?k.split(".")[1].toLowerCase():k.toLowerCase();if(de.startsWith(c)||S.length>=6&&de.startsWith(S)){let xe=Pt($e.attributes.friendly_name);if(xe&&!A(xe)){v=xe;break}}}}if(W&&(v?v.toLowerCase().includes(W.toLowerCase())||/^(?:smoke[_\-\s]*alarm|rauchmelder|sensor|alarm)$/i.test(v.trim())&&(v=`${W} ${v}`):v=`${W} Rauchmelder`),!v&&!A(n)&&(v=Mt(n)),A(v))continue;let V=u.battery_type||"";!V&&b&&b.state&&b.state!=="unknown"&&b.state!=="unavailable"&&(V=b.state);let ve=Number(u.battery_quantity)||1,we=u.battery_type_and_quantity||"";!we&&V&&(we=ve>1?`${ve}x ${V}`:V);let De=null,He="",X=C?.state||u.battery_last_replaced;if(X&&X!=="unavailable"&&X!=="unknown"){He=X;let c=new Date(X);isNaN(c.getTime())||(De=c)}let ut=e.filter_threshold??20,_t=w?.state==="on"||u.battery_low===!0||H!==null&&H<=ut,M=O?.entity_id;!M&&i[`button.${n}_battery_replaced`]?M=`button.${n}_battery_replaced`:!M&&i[`button.${n}_batterie_ersetzt`]?M=`button.${n}_batterie_ersetzt`:!M&&y&&i[`button.${y}_battery_replaced`]?M=`button.${y}_battery_replaced`:!M&&y&&i[`button.${y}_batterie_ersetzt`]&&(M=`button.${y}_batterie_ersetzt`);let ft=b?.state==="unavailable"||$?.state==="unavailable";_.push({id:m.id,deviceId:z||g,sourceEntityId:u.source_entity_id,entityId:D.entity_id,name:v,area:W,batteryLevel:H,batteryType:V,batteryQuantity:ve,batteryTypeAndQuantity:we||"-",lastReplaced:De,lastReplacedStr:He,lastReported:u.battery_last_reported?new Date(u.battery_last_reported):null,isLow:_t,note:u.note,buttonEntityId:M,isUnavailable:ft,state:D.state})}return _}function dt(r,e,t,i,a){let s=typeof t=="number"?t:Number(t),o=!isNaN(s)&&s>0&&typeof t!="boolean"?Math.floor(s):0,_=typeof i=="number"?i:Number(i),p=!isNaN(_)&&_>0&&typeof i!="boolean"?Math.floor(_):o>0?o:10,f=r;o>0&&(f=e>0?e:o),a&&a>0&&(f=Math.min(f,a)),f=Math.min(r,f);let m=f,l=Math.max(0,r-m),g=Math.min(p,l),n=l>0&&(!a||m<a),y=o>0&&m>o;return{effectiveLimit:f,remainingCount:l,nextStep:g,canShowMore:n,canShowLess:y}}function me(r){let e={...r};if(e.initial_rows!==void 0){let t=Number(e.initial_rows);typeof e.initial_rows=="boolean"||isNaN(t)||t<=0?delete e.initial_rows:e.initial_rows=Math.floor(t)}if(e.step_rows!==void 0){let t=Number(e.step_rows);typeof e.step_rows=="boolean"||isNaN(t)||t<=0?delete e.step_rows:e.step_rows=Math.floor(t)}return e.title!==void 0&&typeof e.title!="string"&&delete e.title,e.icon!==void 0&&typeof e.icon!="string"&&delete e.icon,e.sort_by!==void 0&&(["battery","name","type","last_replaced","status","area"].includes(e.sort_by)||(e.sort_by="battery")),e.show_area!==void 0&&typeof e.show_area!="boolean"&&(e.show_area=!!e.show_area),e.always_show_area!==void 0&&typeof e.always_show_area!="boolean"&&(e.always_show_area=!!e.always_show_area),e}function pt(r){if(r.type==="checkbox"||r.tagName==="HA-SWITCH"||r.tagName==="HA-CHECKBOX")return!!r.checked;if(r.type==="number"){let t=r.value;if(t===""||t===null||t===void 0)return;let i=Number(t);return isNaN(i)||i<=0?void 0:Math.floor(i)}let e=r.value;if(!(typeof e=="string"&&e.trim()===""))return e}var J=class extends L{setConfig(e){this._config=me(e)}_valueChanged(e,t,i=!1){if(!this._config)return;let a=e.target,s=pt(a),o;if(i){let p={name:!0,battery:!0,type:!0,last_replaced:!0,status:!0,note:!1,actions:!0,...this._config.columns||{},[t]:!!s};o={...this._config,columns:p}}else o={...this._config},s===void 0?delete o[t]:o[t]=s;o.type||(o.type="custom:battery-notes-card"),this._config=o;let _=new CustomEvent("config-changed",{detail:{config:this._config},bubbles:!0,composed:!0});this.dispatchEvent(_)}render(){if(!this._config)return h``;let e=this.hass?.language||"en",t={name:!0,battery:!0,type:!0,last_replaced:!0,status:!0,area:!1,note:!1,actions:!0,...this._config.columns||{}};return h`
       <div class="card-config">
         <!-- Basic Settings -->
         <div class="config-row">
-          <label class="label">${c("editor_title",t)}</label>
+          <label class="label">${d("editor_title",e)}</label>
           <input
             type="text"
             class="input-text"
             .value=${typeof this._config.title=="string"?this._config.title:""}
-            placeholder=${c("card_title",t)}
+            placeholder=${d("card_title",e)}
             @input=${i=>this._valueChanged(i,"title")}
             @change=${i=>this._valueChanged(i,"title")}
           />
         </div>
 
         <div class="config-row">
-          <label class="label">${c("editor_icon",t)}</label>
+          <label class="label">${d("editor_icon",e)}</label>
           <input
             type="text"
             class="input-text"
@@ -598,22 +643,23 @@
         <!-- Sorting -->
         <div class="config-row two-col">
           <div>
-            <label class="label">${c("editor_sort_by",t)}</label>
+            <label class="label">${d("editor_sort_by",e)}</label>
             <select
               class="input-select"
               .value=${this._config.sort_by??"battery"}
               @change=${i=>this._valueChanged(i,"sort_by")}
             >
-              <option value="battery">${c("editor_col_battery",t)}</option>
-              <option value="name">${c("editor_col_name",t)}</option>
-              <option value="type">${c("editor_col_type",t)}</option>
-              <option value="last_replaced">${c("editor_col_last_replaced",t)}</option>
-              <option value="status">${c("editor_col_status",t)}</option>
+              <option value="battery">${d("editor_col_battery",e)}</option>
+              <option value="name">${d("editor_col_name",e)}</option>
+              <option value="area">${d("editor_col_area",e)}</option>
+              <option value="type">${d("editor_col_type",e)}</option>
+              <option value="last_replaced">${d("editor_col_last_replaced",e)}</option>
+              <option value="status">${d("editor_col_status",e)}</option>
             </select>
           </div>
 
           <div>
-            <label class="label">${c("editor_sort_direction",t)}</label>
+            <label class="label">${d("editor_sort_direction",e)}</label>
             <select
               class="input-select"
               .value=${this._config.sort_direction??"asc"}
@@ -628,7 +674,7 @@
         <!-- Row Limits & Pagination -->
         <div class="config-row two-col">
           <div>
-            <label class="label">${c("editor_initial_rows",t)}</label>
+            <label class="label">${d("editor_initial_rows",e)}</label>
             <input
               type="number"
               min="1"
@@ -641,7 +687,7 @@
           </div>
 
           <div>
-            <label class="label">${c("editor_step_rows",t)}</label>
+            <label class="label">${d("editor_step_rows",e)}</label>
             <input
               type="number"
               min="1"
@@ -655,7 +701,7 @@
         </div>
 
         <!-- Filters & Display Options -->
-        <div class="section-title">${c("editor_show_filters",t)} & Options</div>
+        <div class="section-title">${d("editor_show_filters",e)} & Options</div>
 
         <div class="toggle-grid">
           <label class="toggle-label">
@@ -664,7 +710,7 @@
               .checked=${this._config.show_header??!0}
               @change=${i=>this._valueChanged(i,"show_header")}
             />
-            <span>${c("editor_show_header",t)}</span>
+            <span>${d("editor_show_header",e)}</span>
           </label>
 
           <label class="toggle-label">
@@ -673,7 +719,7 @@
               .checked=${this._config.show_summary??!0}
               @change=${i=>this._valueChanged(i,"show_summary")}
             />
-            <span>${c("editor_show_summary",t)}</span>
+            <span>${d("editor_show_summary",e)}</span>
           </label>
 
           <label class="toggle-label">
@@ -682,7 +728,7 @@
               .checked=${this._config.show_search??!0}
               @change=${i=>this._valueChanged(i,"show_search")}
             />
-            <span>${c("editor_show_search",t)}</span>
+            <span>${d("editor_show_search",e)}</span>
           </label>
 
           <label class="toggle-label">
@@ -691,7 +737,7 @@
               .checked=${this._config.show_filters??!0}
               @change=${i=>this._valueChanged(i,"show_filters")}
             />
-            <span>${c("editor_show_filters",t)}</span>
+            <span>${d("editor_show_filters",e)}</span>
           </label>
 
           <label class="toggle-label">
@@ -700,7 +746,7 @@
               .checked=${this._config.compact??!1}
               @change=${i=>this._valueChanged(i,"compact")}
             />
-            <span>${c("editor_compact",t)}</span>
+            <span>${d("editor_compact",e)}</span>
           </label>
 
           <label class="toggle-label">
@@ -709,7 +755,7 @@
               .checked=${this._config.confirm_replace??!0}
               @change=${i=>this._valueChanged(i,"confirm_replace")}
             />
-            <span>${c("editor_confirm_replace",t)}</span>
+            <span>${d("editor_confirm_replace",e)}</span>
           </label>
 
           <label class="toggle-label">
@@ -718,7 +764,7 @@
               .checked=${this._config.filter_low_only??!1}
               @change=${i=>this._valueChanged(i,"filter_low_only")}
             />
-            <span>${c("editor_filter_low_only",t)}</span>
+            <span>${d("editor_filter_low_only",e)}</span>
           </label>
 
           <label class="toggle-label">
@@ -727,79 +773,106 @@
               .checked=${this._config.hide_unavailable??!1}
               @change=${i=>this._valueChanged(i,"hide_unavailable")}
             />
-            <span>${c("editor_hide_unavailable",t)}</span>
+            <span>${d("editor_hide_unavailable",e)}</span>
+          </label>
+
+          <label class="toggle-label">
+            <input
+              type="checkbox"
+              .checked=${this._config.show_area??!0}
+              @change=${i=>this._valueChanged(i,"show_area")}
+            />
+            <span>${d("editor_show_area",e)}</span>
+          </label>
+
+          <label class="toggle-label">
+            <input
+              type="checkbox"
+              .checked=${this._config.always_show_area??!1}
+              @change=${i=>this._valueChanged(i,"always_show_area")}
+            />
+            <span>${d("editor_always_show_area",e)}</span>
           </label>
         </div>
 
         <!-- Visible Columns -->
-        <div class="section-title">${c("editor_columns",t)}</div>
+        <div class="section-title">${d("editor_columns",e)}</div>
 
         <div class="toggle-grid">
           <label class="toggle-label">
             <input
               type="checkbox"
-              .checked=${e.name}
+              .checked=${t.name}
               @change=${i=>this._valueChanged(i,"name",!0)}
             />
-            <span>${c("editor_col_name",t)}</span>
+            <span>${d("editor_col_name",e)}</span>
           </label>
 
           <label class="toggle-label">
             <input
               type="checkbox"
-              .checked=${e.battery}
+              .checked=${t.battery}
               @change=${i=>this._valueChanged(i,"battery",!0)}
             />
-            <span>${c("editor_col_battery",t)}</span>
+            <span>${d("editor_col_battery",e)}</span>
           </label>
 
           <label class="toggle-label">
             <input
               type="checkbox"
-              .checked=${e.type}
+              .checked=${t.type}
               @change=${i=>this._valueChanged(i,"type",!0)}
             />
-            <span>${c("editor_col_type",t)}</span>
+            <span>${d("editor_col_type",e)}</span>
           </label>
 
           <label class="toggle-label">
             <input
               type="checkbox"
-              .checked=${e.last_replaced}
+              .checked=${t.last_replaced}
               @change=${i=>this._valueChanged(i,"last_replaced",!0)}
             />
-            <span>${c("editor_col_last_replaced",t)}</span>
+            <span>${d("editor_col_last_replaced",e)}</span>
           </label>
 
           <label class="toggle-label">
             <input
               type="checkbox"
-              .checked=${e.status}
+              .checked=${t.status}
               @change=${i=>this._valueChanged(i,"status",!0)}
             />
-            <span>${c("editor_col_status",t)}</span>
+            <span>${d("editor_col_status",e)}</span>
           </label>
 
           <label class="toggle-label">
             <input
               type="checkbox"
-              .checked=${e.actions}
+              .checked=${t.area}
+              @change=${i=>this._valueChanged(i,"area",!0)}
+            />
+            <span>${d("editor_col_area",e)}</span>
+          </label>
+
+          <label class="toggle-label">
+            <input
+              type="checkbox"
+              .checked=${t.actions}
               @change=${i=>this._valueChanged(i,"actions",!0)}
             />
-            <span>${c("editor_col_actions",t)}</span>
+            <span>${d("editor_col_actions",e)}</span>
           </label>
 
           <label class="toggle-label">
             <input
               type="checkbox"
-              .checked=${e.note}
+              .checked=${t.note}
               @change=${i=>this._valueChanged(i,"note",!0)}
             />
-            <span>${c("editor_col_note",t)}</span>
+            <span>${d("editor_col_note",e)}</span>
           </label>
         </div>
       </div>
-    `}static{this.styles=Y`
+    `}static{this.styles=te`
     .card-config {
       display: flex;
       flex-direction: column;
@@ -874,8 +947,8 @@
       width: 16px;
       height: 16px;
     }
-  `}};k([V({attribute:!1})],G.prototype,"hass",2),k([R()],G.prototype,"_config",2);customElements.get("battery-notes-card-editor")||customElements.define("battery-notes-card-editor",G);var E=class extends N{constructor(){super(...arguments);this._searchQuery="";this._activeFilter="all";this._sortBy="battery";this._sortDirection="asc";this._recentlyReplaced=new Set;this._displayedRows=0;this._registriesLoaded=!1;this._registries={}}static async getConfigElement(){return document.createElement("battery-notes-card-editor")}static getStubConfig(){return{type:"custom:battery-notes-card",title:"Battery Notes",icon:"mdi:battery-heart-variant",sort_by:"battery",sort_direction:"asc",show_header:!0,show_summary:!0,show_search:!0,show_filters:!0,compact:!1,confirm_replace:!0,columns:{name:!0,battery:!0,type:!0,last_replaced:!0,status:!0,note:!1,actions:!0}}}setConfig(e){if(!e)throw new Error("Invalid configuration");let i=ft(e);this._config={title:"Battery Notes",icon:"mdi:battery-heart-variant",show_header:!0,show_summary:!0,show_search:!0,show_filters:!0,compact:!1,confirm_replace:!0,sort_by:"battery",sort_direction:"asc",...i,columns:{name:!0,battery:!0,type:!0,last_replaced:!0,status:!0,note:!1,actions:!0,...i.columns||{}}},this._config.sort_by&&(this._sortBy=this._config.sort_by),this._config.sort_direction&&(this._sortDirection=this._config.sort_direction),this._config.filter_low_only&&(this._activeFilter="low"),this._config.initial_rows&&this._config.initial_rows>0?this._displayedRows=this._config.initial_rows:this._displayedRows=0}getCardSize(){return 6}static{this.styles=Xt}connectedCallback(){super.connectedCallback(),this._fetchRegistries()}updated(e){super.updated(e),e.has("hass")&&!this._registriesLoaded&&this._fetchRegistries()}async _fetchRegistries(){if(!(this._registriesLoaded||!this.hass?.connection)){this._registriesLoaded=!0;try{let[e,i,s]=await Promise.all([this.hass.connection.sendMessagePromise({type:"config/entity_registry/list"}).catch(()=>[]),this.hass.connection.sendMessagePromise({type:"config/device_registry/list"}).catch(()=>[]),this.hass.connection.sendMessagePromise({type:"config/area_registry/list"}).catch(()=>[])]);this._registries={entities:e?.length?new Map(e.map(a=>[a.entity_id,a])):void 0,devices:i?.length?new Map(i.map(a=>[a.id,a])):void 0,areas:s?.length?new Map(s.map(a=>[a.area_id,a])):void 0},this.requestUpdate()}catch{}}}_getBatteryDevices(){return oe(this.hass,this._config,this._registries)}_formatRelativeTime(e,i){if(!e)return c("time_never",i);let a=new Date().getTime()-e.getTime();if(a<0)return c("time_today",i);let o=Math.floor(a/(1e3*60*60*24));return o===0?c("time_today",i):o===1?c("time_yesterday",i):o<14?c("time_days_ago",i,{n:o}):o<60?c("time_weeks_ago",i,{n:Math.floor(o/7)}):o<365?c("time_months_ago",i,{n:Math.floor(o/30)}):c("time_years_ago",i,{n:Math.floor(o/365)})}_getBatteryIcon(e){return e===null||isNaN(e)?"mdi:battery-unknown":e<=5?"mdi:battery-alert":e<=15?"mdi:battery-10":e<=25?"mdi:battery-20":e<=35?"mdi:battery-30":e<=45?"mdi:battery-40":e<=55?"mdi:battery-50":e<=65?"mdi:battery-60":e<=75?"mdi:battery-70":e<=85?"mdi:battery-80":e<=95?"mdi:battery-90":"mdi:battery"}_getLevelClass(e){return e===null||isNaN(e)?"unknown":e<=15?"critical":e<=25?"warning":e<=50?"medium":"good"}_handleSort(e){this._sortBy===e?this._sortDirection=this._sortDirection==="asc"?"desc":"asc":(this._sortBy=e,this._sortDirection="asc")}_handleOpenEntity(e){let i=new CustomEvent("hass-more-info",{detail:{entityId:e},bubbles:!0,composed:!0});this.dispatchEvent(i)}async _handleReplaceBattery(e){let i=this.hass?.language||"en";if(this._config.confirm_replace){let s=c("confirm_replace_msg",i,{name:e.name});if(!window.confirm(s))return}try{if(e.buttonEntityId&&this.hass.states[e.buttonEntityId])await this.hass.callService("button","press",{entity_id:e.buttonEntityId});else{let s={};e.deviceId?s.device_id=e.deviceId:e.sourceEntityId?s.source_entity_id=e.sourceEntityId:s.source_entity_id=e.entityId,await this.hass.callService("battery_notes","set_battery_replaced",s)}this._recentlyReplaced=new Set(this._recentlyReplaced).add(e.id),this.requestUpdate(),setTimeout(()=>{this._recentlyReplaced.delete(e.id),this._recentlyReplaced=new Set(this._recentlyReplaced),this.requestUpdate()},3e3)}catch(s){console.error("Failed to mark battery as replaced:",s),alert(`Error replacing battery: ${s instanceof Error?s.message:String(s)}`)}}_handleShowMore(e){let i=this._config.initial_rows&&this._config.initial_rows>0?this._config.initial_rows:10,s=this._displayedRows>0?this._displayedRows:i;this._displayedRows=s+e}_handleShowLess(){this._displayedRows=this._config.initial_rows&&this._config.initial_rows>0?this._config.initial_rows:0}_handleShowAll(e){this._displayedRows=e}render(){if(!this.hass)return h``;let e=this.hass.language||"en",i=this._getBatteryDevices(),s=i.length,a=i.filter(n=>n.isLow).length,o=s-a,u=i.filter(n=>{if(this._config.hide_unavailable&&n.isUnavailable||this._activeFilter==="low"&&!n.isLow||this._activeFilter==="critical"&&(n.batteryLevel===null||n.batteryLevel>10))return!1;if(this._searchQuery.trim()){let b=this._searchQuery.toLowerCase(),y=n.name.toLowerCase().includes(b),w=n.batteryTypeAndQuantity.toLowerCase().includes(b),C=n.note?.toLowerCase().includes(b)||!1;if(!y&&!w&&!C)return!1}return!0});u.sort((n,b)=>{let y=0;switch(this._sortBy){case"battery":let w=n.batteryLevel??(this._sortDirection==="asc"?999:-1),C=b.batteryLevel??(this._sortDirection==="asc"?999:-1);y=w-C;break;case"name":y=n.name.localeCompare(b.name);break;case"type":y=n.batteryTypeAndQuantity.localeCompare(b.batteryTypeAndQuantity);break;case"last_replaced":let $=n.lastReplaced?.getTime()??0,D=b.lastReplaced?.getTime()??0;y=$-D;break;case"status":y=(n.isLow?0:1)-(b.isLow?0:1);break}return this._sortDirection==="asc"?y:-y});let p=u.length,_=ne(p,this._displayedRows,this._config.initial_rows,this._config.step_rows,this._config.max_rows),g=u.slice(0,_.effectiveLimit),l={name:!0,battery:!0,type:!0,last_replaced:!0,status:!0,note:!1,actions:!0,...this._config.columns||{}},f=!!this._config.compact;return h`
-      <ha-card class="${f?"compact":""}">
+  `}};N([Z({attribute:!1})],J.prototype,"hass",2),N([P()],J.prototype,"_config",2);customElements.get("battery-notes-card-editor")||customElements.define("battery-notes-card-editor",J);var R=class extends L{constructor(){super(...arguments);this._searchQuery="";this._activeFilter="all";this._sortBy="battery";this._sortDirection="asc";this._recentlyReplaced=new Set;this._displayedRows=0;this._registriesLoaded=!1;this._registries={}}static async getConfigElement(){return document.createElement("battery-notes-card-editor")}static getStubConfig(){return{type:"custom:battery-notes-card",title:"Battery Notes",icon:"mdi:battery-heart-variant",sort_by:"battery",sort_direction:"asc",show_header:!0,show_summary:!0,show_search:!0,show_filters:!0,compact:!1,confirm_replace:!0,columns:{name:!0,area:!1,battery:!0,type:!0,last_replaced:!0,status:!0,note:!1,actions:!0}}}setConfig(t){if(!t)throw new Error("Invalid configuration");let i=me(t);this._config={title:"Battery Notes",icon:"mdi:battery-heart-variant",show_header:!0,show_summary:!0,show_search:!0,show_filters:!0,compact:!1,confirm_replace:!0,sort_by:"battery",sort_direction:"asc",...i,columns:{name:!0,area:!1,battery:!0,type:!0,last_replaced:!0,status:!0,note:!1,actions:!0,...i.columns||{}}},this._config.sort_by&&(this._sortBy=this._config.sort_by),this._config.sort_direction&&(this._sortDirection=this._config.sort_direction),this._config.filter_low_only&&(this._activeFilter="low"),this._config.initial_rows&&this._config.initial_rows>0?this._displayedRows=this._config.initial_rows:this._displayedRows=0}getCardSize(){return 6}static{this.styles=it}connectedCallback(){super.connectedCallback(),this._fetchRegistries()}updated(t){super.updated(t),t.has("hass")&&!this._registriesLoaded&&this._fetchRegistries()}async _fetchRegistries(){if(!(this._registriesLoaded||!this.hass?.connection)){this._registriesLoaded=!0;try{let[t,i,a]=await Promise.all([this.hass.connection.sendMessagePromise({type:"config/entity_registry/list"}).catch(()=>[]),this.hass.connection.sendMessagePromise({type:"config/device_registry/list"}).catch(()=>[]),this.hass.connection.sendMessagePromise({type:"config/area_registry/list"}).catch(()=>[])]);this._registries={entities:t?.length?new Map(t.map(s=>[s.entity_id,s])):void 0,devices:i?.length?new Map(i.map(s=>[s.id,s])):void 0,areas:a?.length?new Map(a.map(s=>[s.area_id,s])):void 0},this.requestUpdate()}catch{}}}_getBatteryDevices(){return ct(this.hass,this._config,this._registries)}_formatRelativeTime(t,i){if(!t)return d("time_never",i);let s=new Date().getTime()-t.getTime();if(s<0)return d("time_today",i);let o=Math.floor(s/(1e3*60*60*24));return o===0?d("time_today",i):o===1?d("time_yesterday",i):o<14?d("time_days_ago",i,{n:o}):o<60?d("time_weeks_ago",i,{n:Math.floor(o/7)}):o<365?d("time_months_ago",i,{n:Math.floor(o/30)}):d("time_years_ago",i,{n:Math.floor(o/365)})}_getBatteryIcon(t){return t===null||isNaN(t)?"mdi:battery-unknown":t<=5?"mdi:battery-alert":t<=15?"mdi:battery-10":t<=25?"mdi:battery-20":t<=35?"mdi:battery-30":t<=45?"mdi:battery-40":t<=55?"mdi:battery-50":t<=65?"mdi:battery-60":t<=75?"mdi:battery-70":t<=85?"mdi:battery-80":t<=95?"mdi:battery-90":"mdi:battery"}_getLevelClass(t){return t===null||isNaN(t)?"unknown":t<=15?"critical":t<=25?"warning":t<=50?"medium":"good"}_handleSort(t){this._sortBy===t?this._sortDirection=this._sortDirection==="asc"?"desc":"asc":(this._sortBy=t,this._sortDirection="asc")}_handleOpenEntity(t){let i=new CustomEvent("hass-more-info",{detail:{entityId:t},bubbles:!0,composed:!0});this.dispatchEvent(i)}async _handleReplaceBattery(t){let i=this.hass?.language||"en";if(this._config.confirm_replace){let a=d("confirm_replace_msg",i,{name:t.name});if(!window.confirm(a))return}try{if(t.buttonEntityId&&this.hass.states[t.buttonEntityId])await this.hass.callService("button","press",{entity_id:t.buttonEntityId});else{let a={};t.deviceId?a.device_id=t.deviceId:t.sourceEntityId?a.source_entity_id=t.sourceEntityId:a.source_entity_id=t.entityId,await this.hass.callService("battery_notes","set_battery_replaced",a)}this._recentlyReplaced=new Set(this._recentlyReplaced).add(t.id),this.requestUpdate(),setTimeout(()=>{this._recentlyReplaced.delete(t.id),this._recentlyReplaced=new Set(this._recentlyReplaced),this.requestUpdate()},3e3)}catch(a){console.error("Failed to mark battery as replaced:",a),alert(`Error replacing battery: ${a instanceof Error?a.message:String(a)}`)}}_handleShowMore(t){let i=this._config.initial_rows&&this._config.initial_rows>0?this._config.initial_rows:10,a=this._displayedRows>0?this._displayedRows:i;this._displayedRows=a+t}_handleShowLess(){this._displayedRows=this._config.initial_rows&&this._config.initial_rows>0?this._config.initial_rows:0}_handleShowAll(t){this._displayedRows=t}render(){if(!this.hass)return h``;let t=this.hass.language||"en",i=this._getBatteryDevices(),a=i.length,s=i.filter(n=>n.isLow).length,o=a-s,_=i.filter(n=>{if(this._config.hide_unavailable&&n.isUnavailable||this._activeFilter==="low"&&!n.isLow||this._activeFilter==="critical"&&(n.batteryLevel===null||n.batteryLevel>10))return!1;if(this._searchQuery.trim()){let y=this._searchQuery.toLowerCase(),b=n.name.toLowerCase().includes(y),$=n.batteryTypeAndQuantity.toLowerCase().includes(y),C=n.note?.toLowerCase().includes(y)||!1,w=n.area?.toLowerCase().includes(y)||!1;if(!b&&!$&&!C&&!w)return!1}return!0});_.sort((n,y)=>{let b=0;switch(this._sortBy){case"battery":let $=n.batteryLevel??(this._sortDirection==="asc"?999:-1),C=y.batteryLevel??(this._sortDirection==="asc"?999:-1);b=$-C;break;case"name":b=n.name.localeCompare(y.name);break;case"area":{let u=n.area||"",Y=y.area||"";if(!u&&Y)return 1;if(u&&!Y)return-1;let ce=u.localeCompare(Y)||n.name.localeCompare(y.name);return this._sortDirection==="asc"?ce:-ce}case"type":b=n.batteryTypeAndQuantity.localeCompare(y.batteryTypeAndQuantity);break;case"last_replaced":let w=n.lastReplaced?.getTime()??0,O=y.lastReplaced?.getTime()??0;b=w-O;break;case"status":b=(n.isLow?0:1)-(y.isLow?0:1);break}return this._sortDirection==="asc"?b:-b});let p=_.length,f=dt(p,this._displayedRows,this._config.initial_rows,this._config.step_rows,this._config.max_rows),m=_.slice(0,f.effectiveLimit),l={name:!0,area:!1,battery:!0,type:!0,last_replaced:!0,status:!0,note:!1,actions:!0,...this._config.columns||{}},g=!!this._config.compact;return h`
+      <ha-card class="${g?"compact":""}">
         <div class="card-container">
           <!-- Card Header -->
           ${this._config.show_header!==!1?h`
@@ -885,21 +958,21 @@
                       class="header-icon"
                       icon="${this._config.icon||"mdi:battery-heart-variant"}"
                     ></ha-icon>
-                    <span>${this._config.title||c("card_title",e)}</span>
+                    <span>${this._config.title||d("card_title",t)}</span>
                   </div>
 
                   ${this._config.show_summary!==!1?h`
                         <div class="summary-chips">
                           <span class="chip total">
-                            ${c("summary_total",e)}: ${s}
+                            ${d("summary_total",t)}: ${a}
                           </span>
-                          ${a>0?h`
+                          ${s>0?h`
                                 <span class="chip low">
-                                  ${c("summary_low",e)}: ${a}
+                                  ${d("summary_low",t)}: ${s}
                                 </span>
                               `:""}
                           <span class="chip ok">
-                            ${c("summary_ok",e)}: ${o}
+                            ${d("summary_ok",t)}: ${o}
                           </span>
                         </div>
                       `:""}
@@ -916,7 +989,7 @@
                             type="text"
                             class="search-input"
                             .value=${this._searchQuery}
-                            placeholder=${c("search_placeholder",e)}
+                            placeholder=${d("search_placeholder",t)}
                             @input=${n=>{this._searchQuery=n.target.value,this._config.initial_rows&&this._config.initial_rows>0&&(this._displayedRows=this._config.initial_rows)}}
                           />
                           ${this._searchQuery?h`
@@ -935,19 +1008,19 @@
                             class="filter-btn ${this._activeFilter==="all"?"active":""}"
                             @click=${()=>{this._activeFilter="all",this._config.initial_rows&&this._config.initial_rows>0&&(this._displayedRows=this._config.initial_rows)}}
                           >
-                            ${c("filter_all",e)}
+                            ${d("filter_all",t)}
                           </button>
                           <button
                             class="filter-btn ${this._activeFilter==="low"?"active":""}"
                             @click=${()=>{this._activeFilter="low",this._config.initial_rows&&this._config.initial_rows>0&&(this._displayedRows=this._config.initial_rows)}}
                           >
-                            ${c("filter_low",e)} ${a>0?`(${a})`:""}
+                            ${d("filter_low",t)} ${s>0?`(${s})`:""}
                           </button>
                           <button
                             class="filter-btn ${this._activeFilter==="critical"?"active":""}"
                             @click=${()=>{this._activeFilter="critical",this._config.initial_rows&&this._config.initial_rows>0&&(this._displayedRows=this._config.initial_rows)}}
                           >
-                            ${c("filter_critical",e)}
+                            ${d("filter_critical",t)}
                           </button>
                         </div>
                       `:""}
@@ -955,7 +1028,7 @@
               `:""}
 
           <!-- Table Content -->
-          ${g.length>0?h`
+          ${m.length>0?h`
                 <div class="table-wrapper">
                   <table class="battery-table">
                     <thead>
@@ -966,8 +1039,22 @@
                                 @click=${()=>this._handleSort("name")}
                               >
                                 <div class="th-content">
-                                  <span>${c("col_name",e)}</span>
+                                  <span>${d("col_name",t)}</span>
                                   ${this._sortBy==="name"?h`<ha-icon
+                                        class="sort-icon"
+                                        icon="${this._sortDirection==="asc"?"mdi:arrow-up":"mdi:arrow-down"}"
+                                      ></ha-icon>`:""}
+                                </div>
+                              </th>
+                            `:""}
+                        ${l.area?h`
+                              <th
+                                class="col-area-th sortable"
+                                @click=${()=>this._handleSort("area")}
+                              >
+                                <div class="th-content">
+                                  <span>${d("col_area",t)}</span>
+                                  ${this._sortBy==="area"?h`<ha-icon
                                         class="sort-icon"
                                         icon="${this._sortDirection==="asc"?"mdi:arrow-up":"mdi:arrow-down"}"
                                       ></ha-icon>`:""}
@@ -979,7 +1066,7 @@
                                 class="col-battery-th sortable"
                                 @click=${()=>this._handleSort("battery")}>
                                 <div class="th-content">
-                                  <span>${c("col_battery",e)}</span>
+                                  <span>${d("col_battery",t)}</span>
                                   ${this._sortBy==="battery"?h`<ha-icon
                                         class="sort-icon"
                                         icon="${this._sortDirection==="asc"?"mdi:arrow-up":"mdi:arrow-down"}"
@@ -993,7 +1080,7 @@
                                 @click=${()=>this._handleSort("type")}
                               >
                                 <div class="th-content">
-                                  <span>${c("col_type",e)}</span>
+                                  <span>${d("col_type",t)}</span>
                                   ${this._sortBy==="type"?h`<ha-icon
                                         class="sort-icon"
                                         icon="${this._sortDirection==="asc"?"mdi:arrow-up":"mdi:arrow-down"}"
@@ -1007,7 +1094,7 @@
                                 @click=${()=>this._handleSort("last_replaced")}
                               >
                                 <div class="th-content">
-                                  <span>${c("col_last_replaced",e)}</span>
+                                  <span>${d("col_last_replaced",t)}</span>
                                   ${this._sortBy==="last_replaced"?h`<ha-icon
                                         class="sort-icon"
                                         icon="${this._sortDirection==="asc"?"mdi:arrow-up":"mdi:arrow-down"}"
@@ -1021,7 +1108,7 @@
                                 @click=${()=>this._handleSort("status")}
                               >
                                 <div class="th-content">
-                                  <span>${c("col_status",e)}</span>
+                                  <span>${d("col_status",t)}</span>
                                   ${this._sortBy==="status"?h`<ha-icon
                                         class="sort-icon"
                                         icon="${this._sortDirection==="asc"?"mdi:arrow-up":"mdi:arrow-down"}"
@@ -1029,12 +1116,12 @@
                                 </div>
                               </th>
                             `:""}
-                        ${l.note?h`<th class="col-note-th">${c("col_note",e)}</th>`:""}
-                        ${l.actions?h`<th class="col-actions-th">${c("col_actions",e)}</th>`:""}
+                        ${l.note?h`<th class="col-note-th">${d("col_note",t)}</th>`:""}
+                        ${l.actions?h`<th class="col-actions-th">${d("col_actions",t)}</th>`:""}
                       </tr>
                     </thead>
                     <tbody>
-                      ${g.map(n=>{let b=this._getLevelClass(n.batteryLevel),y=this._recentlyReplaced.has(n.id);return h`
+                      ${m.map(n=>{let y=this._getLevelClass(n.batteryLevel),b=this._recentlyReplaced.has(n.id);return h`
                           <tr class="${n.isLow?"row-low":""}">
                             <!-- Name -->
                             ${l.name?h`
@@ -1047,9 +1134,21 @@
                                       >
                                         ${n.name}
                                       </button>
-                                      ${n.area&&!n.name.toLowerCase().includes(n.area.toLowerCase())?h`<span class="device-subtext"><ha-icon icon="mdi:map-marker-outline" style="--mdc-icon-size: 12px; margin-right: 2px;"></ha-icon>${n.area}</span>`:""}
+                                      ${!l.area&&this._config.show_area!==!1&&n.area&&(this._config.always_show_area||!n.name.toLowerCase().includes(n.area.toLowerCase()))?h`<span class="device-subtext"><ha-icon icon="mdi:map-marker-outline" style="--mdc-icon-size: 12px; margin-right: 2px;"></ha-icon>${n.area}</span>`:""}
                                       ${n.note&&!l.note?h`<span class="device-subtext">${n.note}</span>`:""}
                                     </div>
+                                  </td>
+                                `:""}
+
+                            <!-- Area -->
+                            ${l.area?h`
+                                  <td class="col-area-td">
+                                    ${n.area?h`
+                                          <span class="area-badge">
+                                            <ha-icon icon="mdi:map-marker-outline"></ha-icon>
+                                            ${n.area}
+                                          </span>
+                                        `:h`<span class="text-muted">-</span>`}
                                   </td>
                                 `:""}
 
@@ -1058,16 +1157,16 @@
                                   <td class="col-battery-td">
                                     <div class="battery-level-cell">
                                       <ha-icon
-                                        class="battery-icon level-${b}"
+                                        class="battery-icon level-${y}"
                                         icon="${this._getBatteryIcon(n.batteryLevel)}"
                                       ></ha-icon>
                                       <div class="battery-bar-container">
                                         <div
-                                          class="battery-bar-fill bar-${b}"
+                                          class="battery-bar-fill bar-${y}"
                                           style="width: ${Math.min(Math.max(n.batteryLevel??0,0),100)}%;"
                                         ></div>
                                       </div>
-                                      <span class="battery-percent-text level-${b}">
+                                      <span class="battery-percent-text level-${y}">
                                         ${n.batteryLevel!==null?`${Math.round(n.batteryLevel)}%`:"-"}
                                       </span>
                                     </div>
@@ -1092,7 +1191,7 @@
                                       title="${n.lastReplaced?.toLocaleString()||n.lastReplacedStr||""}"
                                     >
                                       <ha-icon icon="mdi:calendar-clock"></ha-icon>
-                                      <span>${this._formatRelativeTime(n.lastReplaced,e)}</span>
+                                      <span>${this._formatRelativeTime(n.lastReplaced,t)}</span>
                                     </div>
                                   </td>
                                 `:""}
@@ -1101,11 +1200,11 @@
                             ${l.status?h`
                                   <td class="col-status-td">
                                     ${n.isUnavailable?h`<span class="status-badge unavailable"
-                                          >${c("status_unavailable",e)}</span
+                                          >${d("status_unavailable",t)}</span
                                         >`:n.isLow?h`<span class="status-badge low"
-                                          >${c("status_low",e)}</span
+                                          >${d("status_low",t)}</span
                                         >`:h`<span class="status-badge ok"
-                                          >${c("status_ok",e)}</span
+                                          >${d("status_ok",t)}</span
                                         >`}
                                   </td>
                                 `:""}
@@ -1123,15 +1222,15 @@
                             ${l.actions?h`
                                   <td class="col-actions-td">
                                     <button
-                                      class="action-btn ${y?"success":""}"
+                                      class="action-btn ${b?"success":""}"
                                       @click=${()=>this._handleReplaceBattery(n)}
-                                      title="${c("action_mark_replaced",e)}"
+                                      title="${d("action_mark_replaced",t)}"
                                     >
                                       <ha-icon
-                                        icon="${y?"mdi:check-bold":"mdi:battery-sync"}"
+                                        icon="${b?"mdi:check-bold":"mdi:battery-sync"}"
                                       ></ha-icon>
                                       <span
-                                        >${y?c("action_replaced",e):c("action_mark_replaced",e)}</span
+                                        >${b?d("action_replaced",t):d("action_mark_replaced",t)}</span
                                       >
                                     </button>
                                   </td>
@@ -1142,37 +1241,37 @@
                   </table>
                 </div>
 
-                ${_.canShowMore||_.canShowLess?h`
+                ${f.canShowMore||f.canShowLess?h`
                       <div class="pagination-container">
-                        ${_.canShowMore?h`
+                        ${f.canShowMore?h`
                               <button
                                 class="pagination-btn primary"
-                                @click=${()=>this._handleShowMore(_.nextStep)}
+                                @click=${()=>this._handleShowMore(f.nextStep)}
                               >
                                 <ha-icon icon="mdi:chevron-down"></ha-icon>
                                 <span>
-                                  ${c("show_more_remaining",e,{count:_.nextStep,remaining:_.remainingCount})}
+                                  ${d("show_more_remaining",t,{count:f.nextStep,remaining:f.remainingCount})}
                                 </span>
                               </button>
                             `:""}
-                        ${_.canShowMore&&_.remainingCount>_.nextStep?h`
+                        ${f.canShowMore&&f.remainingCount>f.nextStep?h`
                               <button
                                 class="pagination-btn secondary"
                                 @click=${()=>this._handleShowAll(p)}
                               >
                                 <ha-icon icon="mdi:unfold-more-horizontal"></ha-icon>
                                 <span>
-                                  ${c("show_all",e,{count:p})}
+                                  ${d("show_all",t,{count:p})}
                                 </span>
                               </button>
                             `:""}
-                        ${_.canShowLess?h`
+                        ${f.canShowLess?h`
                               <button
                                 class="pagination-btn secondary"
                                 @click=${this._handleShowLess}
                               >
                                 <ha-icon icon="mdi:chevron-up"></ha-icon>
-                                <span>${c("show_less",e)}</span>
+                                <span>${d("show_less",t)}</span>
                               </button>
                             `:""}
                       </div>
@@ -1181,13 +1280,13 @@
                 <div class="empty-state">
                   <ha-icon icon="mdi:battery-check"></ha-icon>
                   <span>
-                    ${i.length===0?c("no_devices",e):c("no_results",e)}
+                    ${i.length===0?d("no_devices",t):d("no_results",t)}
                   </span>
                 </div>
               `}
         </div>
       </ha-card>
-    `}};k([V({attribute:!1})],E.prototype,"hass",2),k([R()],E.prototype,"_config",2),k([R()],E.prototype,"_searchQuery",2),k([R()],E.prototype,"_activeFilter",2),k([R()],E.prototype,"_sortBy",2),k([R()],E.prototype,"_sortDirection",2),k([R()],E.prototype,"_recentlyReplaced",2),k([R()],E.prototype,"_displayedRows",2);customElements.get("battery-notes-card")||customElements.define("battery-notes-card",E);window.customCards=window.customCards||[];window.customCards.push({type:"battery-notes-card",name:"Battery Notes Card",description:"A customizable Lovelace table card for Home Assistant Battery Notes integration.",preview:!0,documentationURL:"https://github.com/vitals5/battery-notes-card"});})();
+    `}};N([Z({attribute:!1})],R.prototype,"hass",2),N([P()],R.prototype,"_config",2),N([P()],R.prototype,"_searchQuery",2),N([P()],R.prototype,"_activeFilter",2),N([P()],R.prototype,"_sortBy",2),N([P()],R.prototype,"_sortDirection",2),N([P()],R.prototype,"_recentlyReplaced",2),N([P()],R.prototype,"_displayedRows",2);customElements.get("battery-notes-card")||customElements.define("battery-notes-card",R);window.customCards=window.customCards||[];window.customCards.push({type:"battery-notes-card",name:"Battery Notes Card",description:"A customizable Lovelace table card for Home Assistant Battery Notes integration.",preview:!0,documentationURL:"https://github.com/vitals5/battery-notes-card"});})();
 /*! Bundled license information:
 
 @lit/reactive-element/css-tag.js:

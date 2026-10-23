@@ -75,6 +75,7 @@ export interface HomeAssistantRegistries {
 
 export interface CardColumnsConfig {
   name?: boolean;
+  area?: boolean;
   battery?: boolean;
   type?: boolean;
   last_replaced?: boolean;
@@ -97,7 +98,7 @@ export interface BatteryNotesCardConfig {
   entities?: string[];
   exclude_entities?: string[];
   columns?: CardColumnsConfig;
-  sort_by?: 'battery' | 'name' | 'type' | 'last_replaced' | 'status';
+  sort_by?: 'battery' | 'name' | 'type' | 'last_replaced' | 'status' | 'area';
   sort_direction?: 'asc' | 'desc';
   filter?: CardFilterConfig;
   filter_low_only?: boolean;
@@ -107,6 +108,8 @@ export interface BatteryNotesCardConfig {
   show_summary?: boolean;
   show_search?: boolean;
   show_filters?: boolean;
+  show_area?: boolean;
+  always_show_area?: boolean;
   compact?: boolean;
   confirm_replace?: boolean;
   initial_rows?: number;

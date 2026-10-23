@@ -55,7 +55,7 @@ Click the badge below to open the repository directly in HACS on your Home Assis
 1. Download the `battery-notes-card.js` file from the [Releases](https://github.com/vitals5/battery-notes-card/releases) page or the `dist/` directory.
 2. Copy the file to your Home Assistant configuration directory under `config/www/battery-notes-card.js`.
 3. In Home Assistant, navigate to **Settings** ➔ **Dashboards** ➔ **Resources** (three-dots menu in the top right) and add a new resource:
-   - **URL:** `/local/battery-notes-card.js?v=1.0.8`
+   - **URL:** `/local/battery-notes-card.js?v=1.0.9`
    - **Resource Type:** `JavaScript Module`
 4. Refresh your dashboard.
 
@@ -154,8 +154,10 @@ columns:
 | `type` | string | **Required** | `custom:battery-notes-card` |
 | `title` | string | `Battery Levels` | Card header title |
 | `icon` | string | `mdi:battery-heart-variant` | MDI icon displayed in the header |
-| `sort_by` | string | `battery` | Default sort column: `battery`, `name`, `type`, `last_replaced`, `status` |
+| `sort_by` | string | `battery` | Default sort column: `battery`, `name`, `area`, `type`, `last_replaced`, `status` |
 | `sort_direction`| string | `asc` | Sort direction: `asc` (ascending) or `desc` (descending) |
+| `show_area` | boolean | `true` | Display area as a subtitle below device name (when area column is disabled) |
+| `always_show_area` | boolean | `false` | Always display area subtitle even if area name is already in device name |
 | `show_header` | boolean | `true` | Display card header with title and icon |
 | `show_summary` | boolean | `true` | Display summary counter badges (Total, Low, Good) |
 | `show_search` | boolean | `true` | Display real-time search bar |
@@ -177,6 +179,7 @@ columns:
 | Column | Default | Description |
 | :--- | :--- | :--- |
 | `columns.name` | `true` | Device name (clicking opens the entity more-info dialog) |
+| `columns.area` | `false` | Area / room column with location badge |
 | `columns.battery` | `true` | Battery level (percentage, icon, and colored bar) |
 | `columns.type` | `true` | Battery type & quantity (e.g. `2x AAA`, `CR2032`) |
 | `columns.last_replaced` | `true` | Date of last replacement (relative format) |

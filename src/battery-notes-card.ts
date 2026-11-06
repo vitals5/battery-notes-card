@@ -9,6 +9,7 @@ import {
 } from './types';
 import { cardStyles } from './styles';
 import { localize } from './localize';
+import { getBatteryTypeIcon } from './battery-type-icon';
 import { BatteryNotesCardEditor } from './battery-notes-card-editor';
 import { extractBatteryDevices, computePagination, sanitizeCardConfig } from './device-extractor.ts';
 
@@ -705,7 +706,7 @@ export class BatteryNotesCard extends LitElement {
                               ? html`
                                   <td class="col-type-td">
                                     <span class="type-badge">
-                                      <ha-icon icon="mdi:battery-charging-outline"></ha-icon>
+                                      <ha-icon icon="${getBatteryTypeIcon(item.batteryType || item.batteryTypeAndQuantity)}"></ha-icon>
                                       ${item.batteryTypeAndQuantity}
                                     </span>
                                   </td>

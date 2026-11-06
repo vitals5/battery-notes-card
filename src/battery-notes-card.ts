@@ -8,7 +8,7 @@ import {
   HomeAssistantRegistries,
 } from './types';
 import { cardStyles } from './styles';
-import { localize } from './localize';
+import { localize, localizeBatteryType } from './localize';
 import { BatteryNotesCardEditor } from './battery-notes-card-editor';
 import { extractBatteryDevices, computePagination, sanitizeCardConfig } from './device-extractor.ts';
 
@@ -706,7 +706,7 @@ export class BatteryNotesCard extends LitElement {
                                   <td class="col-type-td">
                                     <span class="type-badge">
                                       <ha-icon icon="mdi:battery-charging-outline"></ha-icon>
-                                      ${item.batteryTypeAndQuantity}
+                                      ${localizeBatteryType(item.batteryTypeAndQuantity, lang)}
                                     </span>
                                   </td>
                                 `

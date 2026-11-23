@@ -950,6 +950,325 @@ describe('Device Extractor Unit Tests', () => {
       assert.deepStrictEqual(desc.map(d => d.name), ['Device Z', 'Device A', 'Device B', 'Device X']);
     });
   });
+
+  describe('Multi-Battery Devices (Danfoss Icon & Multi-Thermostat Systems)', () => {
+    it('Scenario: Danfoss Icon system with multiple room controllers sharing one parent gateway device_id', () => {
+      const hass: HomeAssistant = {
+        states: {
+          // Living Room Thermostat
+          'sensor.danfoss_living_room_battery_plus': {
+            entity_id: 'sensor.danfoss_living_room_battery_plus',
+            state: '85',
+            attributes: {
+              device_class: 'battery',
+              friendly_name: 'Living Room Thermostat Battery+',
+              battery_type: '2x AA',
+              battery_quantity: 2,
+              source_entity_id: 'climate.danfoss_living_room',
+            },
+          },
+          'sensor.danfoss_living_room_battery_type': {
+            entity_id: 'sensor.danfoss_living_room_battery_type',
+            state: '2x AA',
+            attributes: {
+              friendly_name: 'Batterie-Typ',
+              battery_type: 'AA',
+              battery_quantity: 2,
+              source_entity_id: 'climate.danfoss_living_room',
+            },
+          },
+          'button.danfoss_living_room_battery_replaced': {
+            entity_id: 'button.danfoss_living_room_battery_replaced',
+            state: '2025-01-10',
+            attributes: {
+              friendly_name: 'Batterie ersetzt',
+            },
+          },
+          'climate.danfoss_living_room': {
+            entity_id: 'climate.danfoss_living_room',
+            state: 'heat',
+            attributes: {
+              friendly_name: 'Living Room Thermostat',
+            },
+          },
+
+          // Kitchen Thermostat
+          'sensor.danfoss_kitchen_battery_plus': {
+            entity_id: 'sensor.danfoss_kitchen_battery_plus',
+            state: '62',
+            attributes: {
+              device_class: 'battery',
+              friendly_name: 'Kitchen Thermostat Battery+',
+              battery_type: '2x AA',
+              battery_quantity: 2,
+              source_entity_id: 'climate.danfoss_kitchen',
+            },
+          },
+          'sensor.danfoss_kitchen_battery_type': {
+            entity_id: 'sensor.danfoss_kitchen_battery_type',
+            state: '2x AA',
+            attributes: {
+              friendly_name: 'Batterie-Typ',
+              battery_type: 'AA',
+              battery_quantity: 2,
+              source_entity_id: 'climate.danfoss_kitchen',
+            },
+          },
+          'button.danfoss_kitchen_battery_replaced': {
+            entity_id: 'button.danfoss_kitchen_battery_replaced',
+            state: '2025-01-11',
+            attributes: {
+              friendly_name: 'Batterie ersetzt',
+            },
+          },
+          'climate.danfoss_kitchen': {
+            entity_id: 'climate.danfoss_kitchen',
+            state: 'heat',
+            attributes: {
+              friendly_name: 'Kitchen Thermostat',
+            },
+          },
+
+          // Bedroom Thermostat
+          'sensor.danfoss_bedroom_battery_plus': {
+            entity_id: 'sensor.danfoss_bedroom_battery_plus',
+            state: '18',
+            attributes: {
+              device_class: 'battery',
+              friendly_name: 'Bedroom Thermostat Battery+',
+              battery_type: '2x AA',
+              battery_quantity: 2,
+              source_entity_id: 'climate.danfoss_bedroom',
+            },
+          },
+          'sensor.danfoss_bedroom_battery_type': {
+            entity_id: 'sensor.danfoss_bedroom_battery_type',
+            state: '2x AA',
+            attributes: {
+              friendly_name: 'Batterie-Typ',
+              battery_type: 'AA',
+              battery_quantity: 2,
+              source_entity_id: 'climate.danfoss_bedroom',
+            },
+          },
+          'button.danfoss_bedroom_battery_replaced': {
+            entity_id: 'button.danfoss_bedroom_battery_replaced',
+            state: '2025-01-12',
+            attributes: {
+              friendly_name: 'Batterie ersetzt',
+            },
+          },
+          'climate.danfoss_bedroom': {
+            entity_id: 'climate.danfoss_bedroom',
+            state: 'heat',
+            attributes: {
+              friendly_name: 'Bedroom Thermostat',
+            },
+          },
+        },
+      };
+
+      const registries: HomeAssistantRegistries = {
+        // Single parent gateway device in device registry
+        devices: new Map([
+          [
+            'dev_danfoss_master',
+            {
+              id: 'dev_danfoss_master',
+              name: 'Danfoss Icon Floor Heating',
+              area_id: 'area_boiler_room',
+            },
+          ],
+        ]),
+        // All entities belong to dev_danfoss_master, but each room's entities have their own area override
+        entities: new Map([
+          [
+            'sensor.danfoss_living_room_battery_plus',
+            {
+              entity_id: 'sensor.danfoss_living_room_battery_plus',
+              device_id: 'dev_danfoss_master',
+              area_id: 'area_living_room',
+            },
+          ],
+          [
+            'climate.danfoss_living_room',
+            {
+              entity_id: 'climate.danfoss_living_room',
+              device_id: 'dev_danfoss_master',
+              area_id: 'area_living_room',
+            },
+          ],
+          [
+            'sensor.danfoss_kitchen_battery_plus',
+            {
+              entity_id: 'sensor.danfoss_kitchen_battery_plus',
+              device_id: 'dev_danfoss_master',
+              area_id: 'area_kitchen',
+            },
+          ],
+          [
+            'climate.danfoss_kitchen',
+            {
+              entity_id: 'climate.danfoss_kitchen',
+              device_id: 'dev_danfoss_master',
+              area_id: 'area_kitchen',
+            },
+          ],
+          [
+            'sensor.danfoss_bedroom_battery_plus',
+            {
+              entity_id: 'sensor.danfoss_bedroom_battery_plus',
+              device_id: 'dev_danfoss_master',
+              area_id: 'area_bedroom',
+            },
+          ],
+          [
+            'climate.danfoss_bedroom',
+            {
+              entity_id: 'climate.danfoss_bedroom',
+              device_id: 'dev_danfoss_master',
+              area_id: 'area_bedroom',
+            },
+          ],
+        ]),
+        areas: new Map([
+          ['area_boiler_room', { area_id: 'area_boiler_room', name: 'Boiler Room' }],
+          ['area_living_room', { area_id: 'area_living_room', name: 'Living Room' }],
+          ['area_kitchen', { area_id: 'area_kitchen', name: 'Kitchen' }],
+          ['area_bedroom', { area_id: 'area_bedroom', name: 'Bedroom' }],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+
+      // Must produce 3 separate items, NOT a single collapsed device!
+      assert.strictEqual(devices.length, 3);
+
+      const livingRoom = devices.find(d => d.name === 'Living Room Thermostat');
+      assert.ok(livingRoom, 'Living Room Thermostat should be found');
+      assert.strictEqual(livingRoom.batteryLevel, 85);
+      assert.strictEqual(livingRoom.area, 'Living Room');
+      assert.strictEqual(livingRoom.batteryTypeAndQuantity, '2x AA');
+      assert.strictEqual(livingRoom.buttonEntityId, 'button.danfoss_living_room_battery_replaced');
+      assert.strictEqual(livingRoom.isLow, false);
+
+      const kitchen = devices.find(d => d.name === 'Kitchen Thermostat');
+      assert.ok(kitchen, 'Kitchen Thermostat should be found');
+      assert.strictEqual(kitchen.batteryLevel, 62);
+      assert.strictEqual(kitchen.area, 'Kitchen');
+      assert.strictEqual(kitchen.batteryTypeAndQuantity, '2x AA');
+      assert.strictEqual(kitchen.buttonEntityId, 'button.danfoss_kitchen_battery_replaced');
+      assert.strictEqual(kitchen.isLow, false);
+
+      const bedroom = devices.find(d => d.name === 'Bedroom Thermostat');
+      assert.ok(bedroom, 'Bedroom Thermostat should be found');
+      assert.strictEqual(bedroom.batteryLevel, 18);
+      assert.strictEqual(bedroom.area, 'Bedroom');
+      assert.strictEqual(bedroom.batteryTypeAndQuantity, '2x AA');
+      assert.strictEqual(bedroom.buttonEntityId, 'button.danfoss_bedroom_battery_replaced');
+      assert.strictEqual(bedroom.isLow, true); // 18% <= 20%
+    });
+
+    it('Scenario: Multi-battery device where area is assigned on source entity (climate) in entity registry', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.danfoss_office_battery_plus': {
+            entity_id: 'sensor.danfoss_office_battery_plus',
+            state: '74',
+            attributes: {
+              device_class: 'battery',
+              friendly_name: 'Office Battery+',
+              battery_type: '2x AA',
+              source_entity_id: 'climate.danfoss_office',
+            },
+          },
+          'climate.danfoss_office': {
+            entity_id: 'climate.danfoss_office',
+            state: 'heat',
+            attributes: {
+              friendly_name: 'Office Thermostat',
+            },
+          },
+        },
+      };
+
+      const registries: HomeAssistantRegistries = {
+        devices: new Map([
+          ['dev_danfoss', { id: 'dev_danfoss', name: 'Danfoss Master', area_id: 'area_boiler' }],
+        ]),
+        entities: new Map([
+          [
+            'sensor.danfoss_office_battery_plus',
+            { entity_id: 'sensor.danfoss_office_battery_plus', device_id: 'dev_danfoss' },
+          ],
+          [
+            'climate.danfoss_office',
+            { entity_id: 'climate.danfoss_office', device_id: 'dev_danfoss', area_id: 'area_office' },
+          ],
+        ]),
+        areas: new Map([
+          ['area_boiler', { area_id: 'area_boiler', name: 'Boiler Room' }],
+          ['area_office', { area_id: 'area_office', name: 'Office' }],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+      assert.strictEqual(devices.length, 1);
+      assert.strictEqual(devices[0].area, 'Office');
+      assert.strictEqual(devices[0].name, 'Office Thermostat');
+      assert.strictEqual(devices[0].batteryLevel, 74);
+    });
+
+    it('Scenario: Multi-battery device with generic friendly name falls back to combining parent name and area', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.danfoss_room1_battery_plus': {
+            entity_id: 'sensor.danfoss_room1_battery_plus',
+            state: '90',
+            attributes: {
+              friendly_name: 'Battery+', // generic
+              battery_type: 'AA',
+            },
+          },
+          'sensor.danfoss_room2_battery_plus': {
+            entity_id: 'sensor.danfoss_room2_battery_plus',
+            state: '45',
+            attributes: {
+              friendly_name: 'Battery+', // generic
+              battery_type: 'AA',
+            },
+          },
+        },
+      };
+
+      const registries: HomeAssistantRegistries = {
+        devices: new Map([
+          ['dev_danfoss', { id: 'dev_danfoss', name: 'Danfoss Icon' }],
+        ]),
+        entities: new Map([
+          [
+            'sensor.danfoss_room1_battery_plus',
+            { entity_id: 'sensor.danfoss_room1_battery_plus', device_id: 'dev_danfoss', area_id: 'area_hallway' },
+          ],
+          [
+            'sensor.danfoss_room2_battery_plus',
+            { entity_id: 'sensor.danfoss_room2_battery_plus', device_id: 'dev_danfoss', area_id: 'area_bathroom' },
+          ],
+        ]),
+        areas: new Map([
+          ['area_hallway', { area_id: 'area_hallway', name: 'Hallway' }],
+          ['area_bathroom', { area_id: 'area_bathroom', name: 'Bathroom' }],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+      assert.strictEqual(devices.length, 2);
+      assert.strictEqual(devices[0].name, 'Danfoss Icon Hallway');
+      assert.strictEqual(devices[0].area, 'Hallway');
+      assert.strictEqual(devices[1].name, 'Danfoss Icon Bathroom');
+      assert.strictEqual(devices[1].area, 'Bathroom');
+    });
+  });
 });
 
 

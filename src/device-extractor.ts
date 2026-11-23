@@ -49,11 +49,11 @@ export function cleanDeviceName(name: string | null | undefined): string {
   if (!name) return '';
   return name
     .replace(
-      /\s*(?:[-–—:]|\()\s*(?:Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Batterie Plus|Batterie-Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery Status|Batteriestatus|Batterie Status|Battery|Batterie)\s*\)?$/i,
+      /\s*(?:[-–—:]|\()\s*(?:Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Batterie Plus|Batterie-Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery Status|Batteriestatus|Batterie Status|Batteriniveau|Batteristand|Batteri|Battery|Batterie)\s*\)?$/i,
       ''
     )
     .replace(
-      /\s+(?:Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Batterie Plus|Batterie-Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery Status|Batteriestatus|Batterie Status|Battery|Batterie)$/i,
+      /\s+(?:Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Batterie Plus|Batterie-Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery Status|Batteriestatus|Batterie Status|Batteriniveau|Batteristand|Batteri|Battery|Batterie)$/i,
       ''
     )
     .replace(/[\s\-_:–—()]+$/g, '')
@@ -189,10 +189,11 @@ export function extractBatteryDevices(
 
   const states = hass.states;
   let groups: DeviceGroup[] = [];
-  const deviceMap = new Map<string, DeviceGroup>();
   const baseNameMap = new Map<string, DeviceGroup>();
+  const sourceEntityMap = new Map<string, DeviceGroup>();
+  const deviceGroupsMap = new Map<string, DeviceGroup[]>();
 
-  // 1. Collect all Battery Notes entities and group by deviceId or baseName
+  // 1. Collect all Battery Notes entities and group by baseName, source_entity_id, or deviceId
   for (const [entityId, entity] of Object.entries(states)) {
     const attrs = entity.attributes || {};
     const reg = registries?.entities?.get(entityId) || hass.entities?.[entityId];
@@ -212,11 +213,12 @@ export function extractBatteryDevices(
     }
 
     const deviceId: string | undefined = reg?.device_id || attrs.device_id;
+    const sourceEntityId: string | undefined = attrs.source_entity_id;
 
     // Determine baseName: prefer source_entity_id if baseName of entityId would be generic
     let rawBase = getBaseName(entityId);
-    if (attrs.source_entity_id && (isGenericName(rawBase) || !rawBase)) {
-      rawBase = getBaseName(attrs.source_entity_id);
+    if (sourceEntityId && (isGenericName(rawBase) || !rawBase)) {
+      rawBase = getBaseName(sourceEntityId);
     }
     if (attrs.device_name && (isGenericName(rawBase) || !rawBase)) {
       rawBase = getBaseName(attrs.device_name);
@@ -226,38 +228,63 @@ export function extractBatteryDevices(
 
     let group: DeviceGroup | null = null;
 
-    if (deviceId && deviceMap.has(deviceId)) {
-      group = deviceMap.get(deviceId)!;
+    if (sourceEntityId && sourceEntityMap.has(sourceEntityId)) {
+      group = sourceEntityMap.get(sourceEntityId)!;
     } else if (baseName && !isGenericName(baseName) && baseNameMap.has(baseName)) {
       group = baseNameMap.get(baseName)!;
+    } else if (deviceId && deviceGroupsMap.has(deviceId)) {
+      const existingList = deviceGroupsMap.get(deviceId)!;
+      // If there's an existing group for this device that has a generic baseName,
+      // attach to it and promote its baseName if the new entity has a non-generic one!
+      const genericGroup = existingList.find(g => isGenericName(g.baseName));
+      if (genericGroup) {
+        group = genericGroup;
+        if (baseName && !isGenericName(baseName)) {
+          genericGroup.baseName = baseName;
+          baseNameMap.set(baseName, genericGroup);
+        }
+      } else if (isGenericName(baseName) && existingList.length === 1) {
+        group = existingList[0];
+      }
     }
 
     if (!group) {
+      const groupId =
+        deviceId && baseName && !isGenericName(baseName)
+          ? `dev_${deviceId}_${baseName}`
+          : deviceId
+          ? `dev_${deviceId}`
+          : `base_${baseName}`;
+
       group = {
-        id: deviceId ? `dev_${deviceId}` : `base_${baseName}`,
+        id: groupId,
         deviceId,
         baseName,
         entities: [],
       };
       groups.push(group);
-    } else if (deviceId && !group.deviceId) {
-      if (deviceMap.has(deviceId)) {
-        const existingGroup = deviceMap.get(deviceId)!;
-        if (existingGroup !== group) {
-          existingGroup.entities.push(...group.entities);
-          groups = groups.filter(g => g !== group);
-          group = existingGroup;
+
+      if (deviceId) {
+        if (!deviceGroupsMap.has(deviceId)) {
+          deviceGroupsMap.set(deviceId, []);
         }
-      } else {
-        group.deviceId = deviceId;
+        deviceGroupsMap.get(deviceId)!.push(group);
+      }
+    } else if (deviceId && !group.deviceId) {
+      group.deviceId = deviceId;
+      if (!deviceGroupsMap.has(deviceId)) {
+        deviceGroupsMap.set(deviceId, []);
+      }
+      if (!deviceGroupsMap.get(deviceId)!.includes(group)) {
+        deviceGroupsMap.get(deviceId)!.push(group);
       }
     }
 
-    if (deviceId) {
-      deviceMap.set(deviceId, group);
-    }
-    if (baseName && !isGenericName(baseName)) {
+    if (baseName && !isGenericName(baseName) && !baseNameMap.has(baseName)) {
       baseNameMap.set(baseName, group);
+    }
+    if (sourceEntityId && !sourceEntityMap.has(sourceEntityId)) {
+      sourceEntityMap.set(sourceEntityId, group);
     }
 
     group.entities.push(entity);
@@ -358,37 +385,6 @@ export function extractBatteryDevices(
       }
     }
 
-    // Battery level resolution
-    let batteryLevel: number | null = null;
-    if (plusSensor && !isNaN(parseFloat(plusSensor.state))) {
-      batteryLevel = parseFloat(plusSensor.state);
-    } else if (
-      allAttrs.source_entity_id &&
-      states[allAttrs.source_entity_id] &&
-      !isNaN(parseFloat(states[allAttrs.source_entity_id].state))
-    ) {
-      batteryLevel = parseFloat(states[allAttrs.source_entity_id].state);
-    } else if (companionBatterySensor && !isNaN(parseFloat(companionBatterySensor.state))) {
-      batteryLevel = parseFloat(companionBatterySensor.state);
-    } else if (
-      allAttrs.battery_last_reported_level !== undefined &&
-      !isNaN(Number(allAttrs.battery_last_reported_level))
-    ) {
-      batteryLevel = Number(allAttrs.battery_last_reported_level);
-    } else if (deviceId) {
-      const entRegMap = registries?.entities;
-      for (const [eId, st] of Object.entries(states)) {
-        if (!eId.startsWith('sensor.')) continue;
-        const r = entRegMap?.get(eId) || hass.entities?.[eId];
-        if (r?.device_id === deviceId) {
-          if (st && st.attributes?.device_class === 'battery' && !isNaN(parseFloat(st.state))) {
-            batteryLevel = parseFloat(st.state);
-            break;
-          }
-        }
-      }
-    }
-
     // Device Registry check
     let resolvedDeviceId = deviceId;
     if (!resolvedDeviceId) {
@@ -417,6 +413,43 @@ export function extractBatteryDevices(
       ? registries?.devices?.get(resolvedDeviceId) || hass.devices?.[resolvedDeviceId]
       : undefined;
 
+    // Check if this device hosts multiple batteries (e.g. Danfoss Icon master controller with multiple room thermostats)
+    const isMultiBatteryDevice = Boolean(
+      (deviceId && (deviceGroupsMap.get(deviceId)?.length ?? 0) > 1) ||
+      (resolvedDeviceId && (deviceGroupsMap.get(resolvedDeviceId)?.length ?? 0) > 1)
+    );
+
+    // Battery level resolution
+    let batteryLevel: number | null = null;
+    if (plusSensor && !isNaN(parseFloat(plusSensor.state))) {
+      batteryLevel = parseFloat(plusSensor.state);
+    } else if (
+      allAttrs.source_entity_id &&
+      states[allAttrs.source_entity_id] &&
+      !isNaN(parseFloat(states[allAttrs.source_entity_id].state))
+    ) {
+      batteryLevel = parseFloat(states[allAttrs.source_entity_id].state);
+    } else if (companionBatterySensor && !isNaN(parseFloat(companionBatterySensor.state))) {
+      batteryLevel = parseFloat(companionBatterySensor.state);
+    } else if (
+      allAttrs.battery_last_reported_level !== undefined &&
+      !isNaN(Number(allAttrs.battery_last_reported_level))
+    ) {
+      batteryLevel = Number(allAttrs.battery_last_reported_level);
+    } else if (deviceId && !isMultiBatteryDevice) {
+      const entRegMap = registries?.entities;
+      for (const [eId, st] of Object.entries(states)) {
+        if (!eId.startsWith('sensor.')) continue;
+        const r = entRegMap?.get(eId) || hass.entities?.[eId];
+        if (r?.device_id === deviceId) {
+          if (st && st.attributes?.device_class === 'battery' && !isNaN(parseFloat(st.state))) {
+            batteryLevel = parseFloat(st.state);
+            break;
+          }
+        }
+      }
+    }
+
     // Home Assistant entity area_id explicitly overrides device area_id if set
     let primaryAreaId: string | undefined;
 
@@ -437,10 +470,6 @@ export function extractBatteryDevices(
       }
     }
 
-    if (!primaryAreaId) {
-      primaryAreaId = devReg?.area_id || undefined;
-    }
-
     if (!primaryAreaId && allAttrs.source_entity_id) {
       const srcReg = registries?.entities?.get(allAttrs.source_entity_id) || hass.entities?.[allAttrs.source_entity_id];
       if (srcReg?.area_id) {
@@ -453,6 +482,10 @@ export function extractBatteryDevices(
       if (compReg?.area_id) {
         primaryAreaId = compReg.area_id;
       }
+    }
+
+    if (!primaryAreaId) {
+      primaryAreaId = devReg?.area_id || undefined;
     }
 
     let areaName = primaryAreaId
@@ -469,60 +502,137 @@ export function extractBatteryDevices(
     if (config.device_names) {
       name =
         config.device_names[baseName] ||
-        (deviceId ? config.device_names[deviceId] : '') ||
+        (allAttrs.source_entity_id ? config.device_names[allAttrs.source_entity_id] : '') ||
+        (!isMultiBatteryDevice && deviceId ? config.device_names[deviceId] : '') ||
         '';
     }
 
-    // 2. Device Registry name_by_user (user-renamed device in HA)
-    if (!name && devReg?.name_by_user && !isGenericName(devReg.name_by_user)) {
-      name = devReg.name_by_user;
-    }
-
-    // 3. Device Registry default name
-    if (!name && devReg?.name && !isGenericName(devReg.name)) {
-      name = devReg.name;
-    }
-
-    // 4. device_name attribute from Battery Notes
-    if (!name && allAttrs.device_name && !isGenericName(allAttrs.device_name)) {
-      name = allAttrs.device_name;
-    }
-
-    // 5. Entity registry custom name
-    if (!name && primaryEntity) {
-      const entReg = registries?.entities?.get(primaryEntity.entity_id) || hass.entities?.[primaryEntity.entity_id];
-      if (entReg?.name && !isGenericName(entReg.name)) {
-        name = entReg.name;
-      }
-    }
-
-    // 6. Companion battery sensor friendly_name
-    if (!name && companionBatterySensor?.attributes?.friendly_name) {
-      const cleaned = cleanDeviceName(companionBatterySensor.attributes.friendly_name);
-      if (cleaned && !isGenericName(cleaned)) {
-        name = cleaned;
-      }
-    }
-
-    // 7. Group entities friendly_name
-    if (!name) {
-      for (const e of entities) {
-        const rawFriendly = e.attributes?.friendly_name;
-        if (rawFriendly) {
-          const cleaned = cleanDeviceName(rawFriendly);
-          if (cleaned && !isGenericName(cleaned)) {
-            name = cleaned;
-            break;
-          }
-        }
-      }
-    }
-
-    // 8. source_entity_id friendly_name
+    // If Battery Notes was attached to a specific source entity (e.g. climate.danfoss_office),
+    // the source entity's friendly name represents the actual unit/room!
     if (!name && allAttrs.source_entity_id && states[allAttrs.source_entity_id]?.attributes?.friendly_name) {
       const cleaned = cleanDeviceName(states[allAttrs.source_entity_id].attributes.friendly_name!);
       if (cleaned && !isGenericName(cleaned)) {
         name = cleaned;
+      }
+    }
+
+    if (!name && allAttrs.source_entity_id) {
+      const srcReg = registries?.entities?.get(allAttrs.source_entity_id) || hass.entities?.[allAttrs.source_entity_id];
+      if (srcReg?.name && !isGenericName(srcReg.name)) {
+        name = srcReg.name;
+      }
+    }
+
+    if (isMultiBatteryDevice) {
+      // On multi-battery devices (e.g. Danfoss Icon with multiple thermostats),
+      // prioritize the specific thermostat/battery entity name over the parent gateway name!
+
+      // Entity registry custom name on primary entity
+      if (!name && primaryEntity) {
+        const entReg = registries?.entities?.get(primaryEntity.entity_id) || hass.entities?.[primaryEntity.entity_id];
+        if (entReg?.name && !isGenericName(entReg.name)) {
+          name = entReg.name;
+        }
+      }
+
+      // Primary entity friendly name (e.g. "Living Room Battery+" -> "Living Room")
+      if (!name && primaryEntity?.attributes?.friendly_name) {
+        const cleaned = cleanDeviceName(primaryEntity.attributes.friendly_name);
+        if (cleaned && !isGenericName(cleaned)) {
+          name = cleaned;
+        }
+      }
+
+      // Companion battery sensor friendly_name
+      if (!name && companionBatterySensor?.attributes?.friendly_name) {
+        const cleaned = cleanDeviceName(companionBatterySensor.attributes.friendly_name);
+        if (cleaned && !isGenericName(cleaned)) {
+          name = cleaned;
+        }
+      }
+
+      // Group entities friendly_name
+      if (!name) {
+        for (const e of entities) {
+          const rawFriendly = e.attributes?.friendly_name;
+          if (rawFriendly) {
+            const cleaned = cleanDeviceName(rawFriendly);
+            if (cleaned && !isGenericName(cleaned)) {
+              name = cleaned;
+              break;
+            }
+          }
+        }
+      }
+
+      // device_name attribute from Battery Notes
+      if (!name && allAttrs.device_name && !isGenericName(allAttrs.device_name)) {
+        name = allAttrs.device_name;
+      }
+
+      // Fallback: If specific name is still empty, combine parent device name with area or baseName
+      const parentName = devReg?.name_by_user || devReg?.name;
+      if (!name && parentName && !isGenericName(parentName)) {
+        if (areaName && !parentName.toLowerCase().includes(areaName.toLowerCase())) {
+          name = `${parentName} ${areaName}`;
+        } else if (baseName && !isGenericName(baseName)) {
+          name = `${parentName} ${baseName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
+        } else {
+          name = parentName;
+        }
+      }
+    } else {
+      // 2. Device Registry name_by_user (user-renamed device in HA)
+      if (!name && devReg?.name_by_user && !isGenericName(devReg.name_by_user)) {
+        name = devReg.name_by_user;
+      }
+
+      // 3. Device Registry default name
+      if (!name && devReg?.name && !isGenericName(devReg.name)) {
+        name = devReg.name;
+      }
+
+      // 4. device_name attribute from Battery Notes
+      if (!name && allAttrs.device_name && !isGenericName(allAttrs.device_name)) {
+        name = allAttrs.device_name;
+      }
+
+      // 5. Entity registry custom name
+      if (!name && primaryEntity) {
+        const entReg = registries?.entities?.get(primaryEntity.entity_id) || hass.entities?.[primaryEntity.entity_id];
+        if (entReg?.name && !isGenericName(entReg.name)) {
+          name = entReg.name;
+        }
+      }
+
+      // 6. Companion battery sensor friendly_name
+      if (!name && companionBatterySensor?.attributes?.friendly_name) {
+        const cleaned = cleanDeviceName(companionBatterySensor.attributes.friendly_name);
+        if (cleaned && !isGenericName(cleaned)) {
+          name = cleaned;
+        }
+      }
+
+      // 7. Group entities friendly_name
+      if (!name) {
+        for (const e of entities) {
+          const rawFriendly = e.attributes?.friendly_name;
+          if (rawFriendly) {
+            const cleaned = cleanDeviceName(rawFriendly);
+            if (cleaned && !isGenericName(cleaned)) {
+              name = cleaned;
+              break;
+            }
+          }
+        }
+      }
+
+      // 8. source_entity_id friendly_name
+      if (!name && allAttrs.source_entity_id && states[allAttrs.source_entity_id]?.attributes?.friendly_name) {
+        const cleaned = cleanDeviceName(states[allAttrs.source_entity_id].attributes.friendly_name!);
+        if (cleaned && !isGenericName(cleaned)) {
+          name = cleaned;
+        }
       }
     }
 

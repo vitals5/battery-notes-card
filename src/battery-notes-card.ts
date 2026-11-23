@@ -228,10 +228,10 @@ export class BatteryNotesCard extends LitElement {
         });
       } else {
         const serviceData: Record<string, any> = {};
-        if (item.deviceId) {
-          serviceData.device_id = item.deviceId;
-        } else if (item.sourceEntityId) {
+        if (item.sourceEntityId) {
           serviceData.source_entity_id = item.sourceEntityId;
+        } else if (item.deviceId) {
+          serviceData.device_id = item.deviceId;
         } else {
           serviceData.source_entity_id = item.entityId;
         }

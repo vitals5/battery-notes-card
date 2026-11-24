@@ -1269,6 +1269,197 @@ describe('Device Extractor Unit Tests', () => {
       assert.strictEqual(devices[1].area, 'Bathroom');
     });
   });
+
+  describe('Unavailable Devices & Sorting Behavior', () => {
+    it('detects isUnavailable = true when source_entity_id state is unavailable', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.living_room_battery_type': {
+            entity_id: 'sensor.living_room_battery_type',
+            state: '2x AA',
+            attributes: {
+              friendly_name: 'Living Room Battery Type',
+              battery_type: 'AA',
+              battery_quantity: 2,
+              source_entity_id: 'climate.living_room_thermostat',
+            },
+          },
+          'climate.living_room_thermostat': {
+            entity_id: 'climate.living_room_thermostat',
+            state: 'unavailable',
+            attributes: {
+              friendly_name: 'Living Room Thermostat',
+            },
+          },
+        },
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig);
+      assert.strictEqual(devices.length, 1);
+      assert.strictEqual(devices[0].isUnavailable, true);
+    });
+
+    it('detects isUnavailable = true when companion hardware battery sensor state is unavailable', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.motion_sensor_battery_type': {
+            entity_id: 'sensor.motion_sensor_battery_type',
+            state: 'CR2450',
+            attributes: {
+              friendly_name: 'Motion Sensor Battery Type',
+              battery_type: 'CR2450',
+              battery_quantity: 1,
+            },
+          },
+          'sensor.motion_sensor_battery': {
+            entity_id: 'sensor.motion_sensor_battery',
+            state: 'unavailable',
+            attributes: {
+              device_class: 'battery',
+              friendly_name: 'Motion Sensor Battery',
+            },
+          },
+        },
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig);
+      assert.strictEqual(devices.length, 1);
+      assert.strictEqual(devices[0].isUnavailable, true);
+      assert.strictEqual(devices[0].batteryLevel, null);
+    });
+
+    it('detects isUnavailable = true when hardware device battery sensor in device registry is unavailable', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.temp_sensor_battery_type': {
+            entity_id: 'sensor.temp_sensor_battery_type',
+            state: 'CR2032',
+            attributes: {
+              friendly_name: 'Temperature Sensor Battery Type',
+              battery_type: 'CR2032',
+              battery_quantity: 1,
+              device_id: 'dev_temp_sensor',
+            },
+          },
+          'sensor.temp_hardware_battery': {
+            entity_id: 'sensor.temp_hardware_battery',
+            state: 'unavailable',
+            attributes: {
+              device_class: 'battery',
+              friendly_name: 'Temperature Sensor Battery',
+            },
+          },
+        },
+      };
+
+      const registries: HomeAssistantRegistries = {
+        devices: new Map([['dev_temp_sensor', { id: 'dev_temp_sensor', name: 'Temp Sensor' }]]),
+        entities: new Map([
+          ['sensor.temp_hardware_battery', { entity_id: 'sensor.temp_hardware_battery', device_id: 'dev_temp_sensor' }],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+      assert.strictEqual(devices.length, 1);
+      assert.strictEqual(devices[0].isUnavailable, true);
+    });
+
+    it('sorts by status correctly: unavailable (rank 0) -> low (rank 1) -> ok (rank 2)', () => {
+      const devices = [
+        { name: 'Healthy Device', isUnavailable: false, isLow: false, batteryLevel: 90 },
+        { name: 'Dead Device', isUnavailable: true, isLow: false, batteryLevel: null },
+        { name: 'Low Battery Device', isUnavailable: false, isLow: true, batteryLevel: 15 },
+      ];
+
+      const statusComparator = (direction: 'asc' | 'desc') => (a: typeof devices[0], b: typeof devices[0]) => {
+        const rank = (d: typeof a) => (d.isUnavailable ? 0 : d.isLow ? 1 : 2);
+        const rankA = rank(a);
+        const rankB = rank(b);
+        let comparison = 0;
+        if (rankA !== rankB) {
+          comparison = rankA - rankB;
+        } else {
+          const batA = a.batteryLevel ?? -1;
+          const batB = b.batteryLevel ?? -1;
+          comparison = batA !== batB ? batA - batB : a.name.localeCompare(b.name);
+        }
+        return direction === 'asc' ? comparison : -comparison;
+      };
+
+      const asc = [...devices].sort(statusComparator('asc'));
+      assert.deepStrictEqual(asc.map(d => d.name), ['Dead Device', 'Low Battery Device', 'Healthy Device']);
+
+      const desc = [...devices].sort(statusComparator('desc'));
+      assert.deepStrictEqual(desc.map(d => d.name), ['Healthy Device', 'Low Battery Device', 'Dead Device']);
+    });
+
+    it('sorts by battery ascending with null level (dead/unavailable) at top, and descending at bottom', () => {
+      const devices = [
+        { name: 'Empty Device', batteryLevel: 0, isUnavailable: false },
+        { name: 'Dead Device', batteryLevel: null, isUnavailable: true },
+        { name: 'Full Device', batteryLevel: 100, isUnavailable: false },
+        { name: 'Mid Device', batteryLevel: 50, isUnavailable: false },
+      ];
+
+      const batteryComparator = (direction: 'asc' | 'desc') => (a: typeof devices[0], b: typeof devices[0]) => {
+        const levelA = a.batteryLevel ?? -1;
+        const levelB = b.batteryLevel ?? -1;
+        let comparison = levelA - levelB;
+        if (comparison === 0) {
+          comparison = a.name.localeCompare(b.name);
+        }
+        return direction === 'asc' ? comparison : -comparison;
+      };
+
+      const asc = [...devices].sort(batteryComparator('asc'));
+      assert.deepStrictEqual(asc.map(d => d.name), ['Dead Device', 'Empty Device', 'Mid Device', 'Full Device']);
+
+      const desc = [...devices].sort(batteryComparator('desc'));
+      assert.deepStrictEqual(desc.map(d => d.name), ['Full Device', 'Mid Device', 'Empty Device', 'Dead Device']);
+    });
+
+    it('pins unavailable devices to the top when unavailable_first: true regardless of sort column', () => {
+      const devices = [
+        { name: 'Alpha Device', isUnavailable: false, batteryLevel: 80 },
+        { name: 'Zeta Device', isUnavailable: true, batteryLevel: null },
+        { name: 'Beta Device', isUnavailable: false, batteryLevel: 40 },
+      ];
+
+      const sortWithName = (unavailableFirst: boolean) => [...devices].sort((a, b) => {
+        if (unavailableFirst) {
+          if (a.isUnavailable && !b.isUnavailable) return -1;
+          if (!a.isUnavailable && b.isUnavailable) return 1;
+        }
+        return a.name.localeCompare(b.name);
+      });
+
+      const withoutPinning = sortWithName(false);
+      assert.deepStrictEqual(withoutPinning.map(d => d.name), ['Alpha Device', 'Beta Device', 'Zeta Device']);
+
+      const withPinning = sortWithName(true);
+      assert.deepStrictEqual(withPinning.map(d => d.name), ['Zeta Device', 'Alpha Device', 'Beta Device']);
+    });
+
+    it('sanitizeCardConfig preserves and sanitizes unavailable_first option', () => {
+      const conf1 = sanitizeCardConfig({
+        type: 'custom:battery-notes-card',
+        unavailable_first: true,
+      });
+      assert.strictEqual(conf1.unavailable_first, true);
+
+      const conf2 = sanitizeCardConfig({
+        type: 'custom:battery-notes-card',
+        unavailable_first: false,
+      });
+      assert.strictEqual(conf2.unavailable_first, false);
+
+      const conf3 = sanitizeCardConfig({
+        type: 'custom:battery-notes-card',
+        unavailable_first: ('true' as any),
+      });
+      assert.strictEqual(conf3.unavailable_first, true);
+    });
+  });
 });
 
 

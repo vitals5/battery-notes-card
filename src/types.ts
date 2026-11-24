@@ -88,6 +88,7 @@ export interface CardFilterConfig {
   battery_low_only?: boolean;
   threshold?: number;
   hide_unavailable?: boolean;
+  unavailable_first?: boolean;
   search?: boolean;
 }
 
@@ -104,6 +105,7 @@ export interface BatteryNotesCardConfig {
   filter_low_only?: boolean;
   filter_threshold?: number;
   hide_unavailable?: boolean;
+  unavailable_first?: boolean;
   show_header?: boolean;
   show_summary?: boolean;
   show_search?: boolean;

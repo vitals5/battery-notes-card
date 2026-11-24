@@ -281,7 +281,7 @@ export class BatteryNotesCard extends LitElement {
 
     // Summary counters
     const totalCount = allDevices.length;
-    const lowCount = allDevices.filter(d => d.isLow).length;
+    const lowCount = allDevices.filter(d => d.isLow || d.isUnavailable).length;
     const okCount = totalCount - lowCount;
 
     // Filter devices
@@ -292,11 +292,11 @@ export class BatteryNotesCard extends LitElement {
       }
 
       // Quick Filter Pills
-      if (this._activeFilter === 'low' && !device.isLow) {
+      if (this._activeFilter === 'low' && !device.isLow && !device.isUnavailable) {
         return false;
       }
       if (this._activeFilter === 'critical') {
-        if (device.batteryLevel === null || device.batteryLevel > 10) return false;
+        if (!device.isUnavailable && (device.batteryLevel === null || device.batteryLevel > 10)) return false;
       }
 
       // Search Query
@@ -314,13 +314,22 @@ export class BatteryNotesCard extends LitElement {
 
     // Sort devices
     filtered.sort((a, b) => {
+      if (this._config.unavailable_first) {
+        if (a.isUnavailable && !b.isUnavailable) return -1;
+        if (!a.isUnavailable && b.isUnavailable) return 1;
+      }
+
       let comparison = 0;
       switch (this._sortBy) {
-        case 'battery':
-          const levelA = a.batteryLevel ?? (this._sortDirection === 'asc' ? 999 : -1);
-          const levelB = b.batteryLevel ?? (this._sortDirection === 'asc' ? 999 : -1);
+        case 'battery': {
+          const levelA = a.batteryLevel ?? -1;
+          const levelB = b.batteryLevel ?? -1;
           comparison = levelA - levelB;
+          if (comparison === 0) {
+            comparison = a.name.localeCompare(b.name);
+          }
           break;
+        }
         case 'name':
           comparison = a.name.localeCompare(b.name);
           break;
@@ -340,9 +349,19 @@ export class BatteryNotesCard extends LitElement {
           const timeB = b.lastReplaced?.getTime() ?? 0;
           comparison = timeA - timeB;
           break;
-        case 'status':
-          comparison = (a.isLow ? 0 : 1) - (b.isLow ? 0 : 1);
+        case 'status': {
+          const rank = (d: BatteryDeviceItem) => (d.isUnavailable ? 0 : d.isLow ? 1 : 2);
+          const rankA = rank(a);
+          const rankB = rank(b);
+          if (rankA !== rankB) {
+            comparison = rankA - rankB;
+          } else {
+            const batA = a.batteryLevel ?? -1;
+            const batB = b.batteryLevel ?? -1;
+            comparison = batA !== batB ? batA - batB : a.name.localeCompare(b.name);
+          }
           break;
+        }
       }
       return this._sortDirection === 'asc' ? comparison : -comparison;
     });

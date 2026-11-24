@@ -167,6 +167,7 @@ columns:
 | `filter_low_only`| boolean | `false` | Only show devices with low battery |
 | `filter_threshold`| number | `20` | Threshold percentage for "Low Battery" status |
 | `hide_unavailable`| boolean | `false` | Hide unavailable entities from the table |
+| `unavailable_first`| boolean | `false` | Always pin unavailable devices to the top of the table |
 | `initial_rows` | number | - | Number of rows displayed on initial load (reveals "Show more" button) |
 | `step_rows` | number | *(same as initial)* | Number of additional rows to reveal per "Show more" click |
 | `max_rows` | number | - | Maximum total number of rows to display |

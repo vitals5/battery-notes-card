@@ -240,6 +240,15 @@ export class BatteryNotesCardEditor extends LitElement {
           <label class="toggle-label">
             <input
               type="checkbox"
+              .checked=${this._config.unavailable_first ?? false}
+              @change=${(e: Event) => this._valueChanged(e, 'unavailable_first')}
+            />
+            <span>${localize('editor_unavailable_first', lang)}</span>
+          </label>
+
+          <label class="toggle-label">
+            <input
+              type="checkbox"
               .checked=${this._config.show_area ?? true}
               @change=${(e: Event) => this._valueChanged(e, 'show_area')}
             />

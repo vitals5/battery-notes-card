@@ -421,6 +421,19 @@ export function extractBatteryDevices(
 
     // Battery level resolution
     let batteryLevel: number | null = null;
+    let deviceBatterySensor: HassEntity | undefined;
+    if (deviceId && !isMultiBatteryDevice) {
+      const entRegMap = registries?.entities;
+      for (const [eId, st] of Object.entries(states)) {
+        if (!eId.startsWith('sensor.')) continue;
+        const r = entRegMap?.get(eId) || hass.entities?.[eId];
+        if (r?.device_id === deviceId && st && st.attributes?.device_class === 'battery') {
+          deviceBatterySensor = st;
+          break;
+        }
+      }
+    }
+
     if (plusSensor && !isNaN(parseFloat(plusSensor.state))) {
       batteryLevel = parseFloat(plusSensor.state);
     } else if (
@@ -436,18 +449,8 @@ export function extractBatteryDevices(
       !isNaN(Number(allAttrs.battery_last_reported_level))
     ) {
       batteryLevel = Number(allAttrs.battery_last_reported_level);
-    } else if (deviceId && !isMultiBatteryDevice) {
-      const entRegMap = registries?.entities;
-      for (const [eId, st] of Object.entries(states)) {
-        if (!eId.startsWith('sensor.')) continue;
-        const r = entRegMap?.get(eId) || hass.entities?.[eId];
-        if (r?.device_id === deviceId) {
-          if (st && st.attributes?.device_class === 'battery' && !isNaN(parseFloat(st.state))) {
-            batteryLevel = parseFloat(st.state);
-            break;
-          }
-        }
-      }
+    } else if (deviceBatterySensor && !isNaN(parseFloat(deviceBatterySensor.state))) {
+      batteryLevel = parseFloat(deviceBatterySensor.state);
     }
 
     // Home Assistant entity area_id explicitly overrides device area_id if set
@@ -726,7 +729,12 @@ export function extractBatteryDevices(
     }
 
     const isUnavailable =
-      typeSensor?.state === 'unavailable' || plusSensor?.state === 'unavailable';
+      plusSensor?.state === 'unavailable' ||
+      primaryEntity?.state === 'unavailable' ||
+      typeSensor?.state === 'unavailable' ||
+      Boolean(allAttrs.source_entity_id && states[allAttrs.source_entity_id]?.state === 'unavailable') ||
+      companionBatterySensor?.state === 'unavailable' ||
+      deviceBatterySensor?.state === 'unavailable';
 
     result.push({
       id: group.id,
@@ -842,6 +850,10 @@ export function sanitizeCardConfig(config: BatteryNotesCardConfig): BatteryNotes
 
   if (cleanConfig.always_show_area !== undefined && typeof cleanConfig.always_show_area !== 'boolean') {
     cleanConfig.always_show_area = Boolean(cleanConfig.always_show_area);
+  }
+
+  if (cleanConfig.unavailable_first !== undefined && typeof cleanConfig.unavailable_first !== 'boolean') {
+    cleanConfig.unavailable_first = Boolean(cleanConfig.unavailable_first);
   }
 
   return cleanConfig;

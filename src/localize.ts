@@ -34,6 +34,8 @@ const languages: Record<string, Record<string, string>> = {
     time_weeks_ago: '{n}w ago',
     time_months_ago: '{n}m ago',
     time_years_ago: '{n}y ago',
+    type_rechargeable: 'Rechargeable',
+    type_irreplaceable: 'Irreplaceable',
     editor_title: 'Title',
     editor_icon: 'Icon',
     editor_show_header: 'Show Header',
@@ -100,6 +102,8 @@ const languages: Record<string, Record<string, string>> = {
     time_weeks_ago: 'Vor {n} Wochen',
     time_months_ago: 'Vor {n} Monaten',
     time_years_ago: 'Vor {n} Jahren',
+    type_rechargeable: 'Wiederaufladbar',
+    type_irreplaceable: 'Nicht austauschbar',
     editor_title: 'Titel',
     editor_icon: 'Icon',
     editor_show_header: 'Kopfzeile anzeigen',
@@ -131,10 +135,79 @@ const languages: Record<string, Record<string, string>> = {
     editor_initial_rows: 'Anzahl Zeilen am Anfang',
     editor_step_rows: 'Weitere Zeilen pro Klick',
   },
+  cs: {
+    card_title: 'Baterie',
+    col_name: 'Zařízení',
+    col_area: 'Oblast',
+    col_battery: 'Baterie',
+    col_type: 'Typ',
+    col_last_replaced: 'Výměna',
+    col_status: 'Stav',
+    col_note: 'Poznámka',
+    col_actions: 'Akce',
+    status_low: 'Slabá',
+    status_ok: 'OK',
+    status_critical: 'Kritická',
+    status_unavailable: 'Nedostupné',
+    action_mark_replaced: 'Vyměněno',
+    action_replaced: 'Zapsáno',
+    confirm_replace_title: 'Potvrdit výměnu baterie',
+    confirm_replace_msg: 'Zapsat výměnu baterie u „{name}"?',
+    replaced_success: 'Výměna baterie zapsána',
+    search_placeholder: 'Hledat zařízení nebo typ baterie…',
+    filter_all: 'Vše',
+    filter_low: 'Slabé',
+    filter_critical: 'Kritické',
+    summary_total: 'Celkem',
+    summary_low: 'Slabé',
+    summary_ok: 'V pořádku',
+    no_devices: 'Nenalezena žádná zařízení z Battery Notes.',
+    no_results: 'Žádné zařízení neodpovídá hledání.',
+    time_never: 'Nikdy',
+    time_today: 'Dnes',
+    time_yesterday: 'Včera',
+    time_days_ago: 'před {n} d',
+    time_weeks_ago: 'před {n} týd.',
+    time_months_ago: 'před {n} měs.',
+    time_years_ago: 'před {n} r.',
+    type_rechargeable: 'Nabíjecí',
+    type_irreplaceable: 'Nevyměnitelná',
+    editor_title: 'Nadpis',
+    editor_icon: 'Ikona',
+    editor_show_header: 'Zobrazit záhlaví',
+    editor_show_summary: 'Zobrazit souhrn (počty)',
+    editor_show_search: 'Zobrazit vyhledávání',
+    editor_show_filters: 'Zobrazit rychlé filtry',
+    editor_compact: 'Kompaktní rozložení',
+    editor_confirm_replace: 'Potvrzovat výměnu',
+    editor_sort_by: 'Řadit podle',
+    editor_sort_direction: 'Směr řazení',
+    editor_filter_low_only: 'Jen slabé baterie',
+    editor_filter_threshold: 'Hranice slabé baterie (%)',
+    editor_hide_unavailable: 'Skrýt nedostupná zařízení',
+    editor_columns: 'Zobrazené sloupce',
+    editor_col_name: 'Název',
+    editor_col_area: 'Oblast',
+    editor_col_battery: 'Stav baterie',
+    editor_col_type: 'Typ baterie',
+    editor_col_last_replaced: 'Poslední výměna',
+    editor_col_status: 'Štítek stavu',
+    editor_col_note: 'Poznámka',
+    editor_col_actions: 'Tlačítko výměny',
+    editor_show_area: 'Zobrazit oblast pod názvem',
+    editor_always_show_area: 'Vždy zobrazit oblast (i když je v názvu)',
+    show_more: 'Zobrazit dalších {count}',
+    show_more_remaining: 'Zobrazit dalších {count} (zbývá {remaining})',
+    show_less: 'Zobrazit méně',
+    show_all: 'Zobrazit vše ({count})',
+    editor_initial_rows: 'Počet řádků na začátku',
+    editor_step_rows: 'Přidat řádků na kliknutí',
+  },
 };
 
 export function localize(stringKey: string, lang = 'en', replace?: Record<string, string | number>): string {
-  const langKey = lang.startsWith('de') ? 'de' : 'en';
+  const short = lang.toLowerCase().split(/[-_]/)[0];
+  const langKey = languages[short] ? short : 'en';
   let translated = languages[langKey]?.[stringKey] || languages['en']?.[stringKey] || stringKey;
 
   if (replace) {
@@ -144,4 +217,15 @@ export function localize(stringKey: string, lang = 'en', replace?: Record<string
   }
 
   return translated;
+}
+
+/**
+ * Translates the special Battery Notes types ("Rechargeable", "Irreplaceable"),
+ * keeps a leading quantity ("2× ") and leaves real cell names untouched.
+ */
+export function localizeBatteryType(value: string, lang = 'en'): string {
+  if (!value) return value;
+  return value
+    .replace(/\bRechargeable\b/i, localize('type_rechargeable', lang))
+    .replace(/\bIrreplaceable\b/i, localize('type_irreplaceable', lang));
 }

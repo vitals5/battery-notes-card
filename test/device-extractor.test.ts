@@ -1627,6 +1627,319 @@ describe('Device Extractor Unit Tests', () => {
       assert.strictEqual(conf3.battery_plus_only, true);
     });
   });
+
+  describe('Danfoss Icon & Duplicate Prevention Tests (v1.1.3)', () => {
+    it('Scenario: Danfoss Icon system without Battery+ extracts battery level from climate.attributes.battery_level and shows all thermostats separately', () => {
+      const hass: HomeAssistant = {
+        states: {
+          // Living Room (Stue)
+          'climate.danfoss_stue': {
+            entity_id: 'climate.danfoss_stue',
+            state: 'heat',
+            attributes: {
+              friendly_name: 'Stue Termostat',
+              battery_level: 80,
+            },
+          },
+          'sensor.danfoss_stue_battery_type': {
+            entity_id: 'sensor.danfoss_stue_battery_type',
+            state: '2x AA',
+            attributes: {
+              friendly_name: 'Batterie-Typ',
+              battery_type: 'AA',
+              battery_quantity: 2,
+              source_entity_id: 'climate.danfoss_stue',
+            },
+          },
+          'button.danfoss_stue_battery_replaced': {
+            entity_id: 'button.danfoss_stue_battery_replaced',
+            state: '2025-01-01T10:00:00Z',
+            attributes: {
+              friendly_name: 'Batterie ersetzt',
+            },
+          },
+          'binary_sensor.danfoss_stue_battery_low': {
+            entity_id: 'binary_sensor.danfoss_stue_battery_low',
+            state: 'off',
+            attributes: {
+              friendly_name: 'Batterie fast leer',
+            },
+          },
+
+          // Kitchen (Køkken)
+          'climate.danfoss_kokken': {
+            entity_id: 'climate.danfoss_kokken',
+            state: 'heat',
+            attributes: {
+              friendly_name: 'Køkken Termostat',
+              battery_level: 65,
+            },
+          },
+          'sensor.danfoss_kokken_battery_type': {
+            entity_id: 'sensor.danfoss_kokken_battery_type',
+            state: '2x AA',
+            attributes: {
+              friendly_name: 'Batterie-Typ',
+              battery_type: 'AA',
+              battery_quantity: 2,
+              source_entity_id: 'climate.danfoss_kokken',
+            },
+          },
+          'button.danfoss_kokken_battery_replaced': {
+            entity_id: 'button.danfoss_kokken_battery_replaced',
+            state: '2025-01-01T10:00:00Z',
+            attributes: {
+              friendly_name: 'Batterie ersetzt',
+            },
+          },
+          'binary_sensor.danfoss_kokken_battery_low': {
+            entity_id: 'binary_sensor.danfoss_kokken_battery_low',
+            state: 'off',
+            attributes: {
+              friendly_name: 'Batterie fast leer',
+            },
+          },
+
+          // Bedroom (Soveværelse)
+          'climate.danfoss_sovevaerelse': {
+            entity_id: 'climate.danfoss_sovevaerelse',
+            state: 'off',
+            attributes: {
+              friendly_name: 'Soveværelse Termostat',
+              battery_level: 15,
+            },
+          },
+          'sensor.danfoss_sovevaerelse_battery_type': {
+            entity_id: 'sensor.danfoss_sovevaerelse_battery_type',
+            state: '2x AA',
+            attributes: {
+              friendly_name: 'Batterie-Typ',
+              battery_type: 'AA',
+              battery_quantity: 2,
+              source_entity_id: 'climate.danfoss_sovevaerelse',
+            },
+          },
+          'button.danfoss_sovevaerelse_battery_replaced': {
+            entity_id: 'button.danfoss_sovevaerelse_battery_replaced',
+            state: '2025-01-01T10:00:00Z',
+            attributes: {
+              friendly_name: 'Batterie ersetzt',
+            },
+          },
+          'binary_sensor.danfoss_sovevaerelse_battery_low': {
+            entity_id: 'binary_sensor.danfoss_sovevaerelse_battery_low',
+            state: 'on',
+            attributes: {
+              friendly_name: 'Batterie fast leer',
+            },
+          },
+        },
+      };
+
+      const registries: HomeAssistantRegistries = {
+        devices: new Map([
+          [
+            'dev_danfoss_master',
+            {
+              id: 'dev_danfoss_master',
+              name: 'Danfoss Icon Floor Heating',
+              area_id: 'area_boiler_room',
+            },
+          ],
+        ]),
+        entities: new Map([
+          ['sensor.danfoss_stue_battery_type', { entity_id: 'sensor.danfoss_stue_battery_type', device_id: 'dev_danfoss_master', platform: 'battery_notes', area_id: 'area_stue' }],
+          ['climate.danfoss_stue', { entity_id: 'climate.danfoss_stue', device_id: 'dev_danfoss_master', area_id: 'area_stue' }],
+          ['button.danfoss_stue_battery_replaced', { entity_id: 'button.danfoss_stue_battery_replaced', device_id: 'dev_danfoss_master', platform: 'battery_notes' }],
+          ['binary_sensor.danfoss_stue_battery_low', { entity_id: 'binary_sensor.danfoss_stue_battery_low', device_id: 'dev_danfoss_master', platform: 'battery_notes' }],
+
+          ['sensor.danfoss_kokken_battery_type', { entity_id: 'sensor.danfoss_kokken_battery_type', device_id: 'dev_danfoss_master', platform: 'battery_notes', area_id: 'area_kokken' }],
+          ['climate.danfoss_kokken', { entity_id: 'climate.danfoss_kokken', device_id: 'dev_danfoss_master', area_id: 'area_kokken' }],
+          ['button.danfoss_kokken_battery_replaced', { entity_id: 'button.danfoss_kokken_battery_replaced', device_id: 'dev_danfoss_master', platform: 'battery_notes' }],
+          ['binary_sensor.danfoss_kokken_battery_low', { entity_id: 'binary_sensor.danfoss_kokken_battery_low', device_id: 'dev_danfoss_master', platform: 'battery_notes' }],
+
+          ['sensor.danfoss_sovevaerelse_battery_type', { entity_id: 'sensor.danfoss_sovevaerelse_battery_type', device_id: 'dev_danfoss_master', platform: 'battery_notes', area_id: 'area_sovevaerelse' }],
+          ['climate.danfoss_sovevaerelse', { entity_id: 'climate.danfoss_sovevaerelse', device_id: 'dev_danfoss_master', area_id: 'area_sovevaerelse' }],
+          ['button.danfoss_sovevaerelse_battery_replaced', { entity_id: 'button.danfoss_sovevaerelse_battery_replaced', device_id: 'dev_danfoss_master', platform: 'battery_notes' }],
+          ['binary_sensor.danfoss_sovevaerelse_battery_low', { entity_id: 'binary_sensor.danfoss_sovevaerelse_battery_low', device_id: 'dev_danfoss_master', platform: 'battery_notes' }],
+        ]),
+        areas: new Map([
+          ['area_boiler_room', { area_id: 'area_boiler_room', name: 'Boiler Room' }],
+          ['area_stue', { area_id: 'area_stue', name: 'Stue' }],
+          ['area_kokken', { area_id: 'area_kokken', name: 'Køkken' }],
+          ['area_sovevaerelse', { area_id: 'area_sovevaerelse', name: 'Soveværelse' }],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+
+      // Must produce exactly 3 devices, one for each thermostat, NEVER 1 and NEVER 6!
+      assert.strictEqual(devices.length, 3);
+
+      const stue = devices.find(d => d.name === 'Stue Termostat');
+      assert.ok(stue, 'Stue Termostat should be found');
+      assert.strictEqual(stue.batteryLevel, 80, 'Battery level should be extracted from climate attributes');
+      assert.strictEqual(stue.batteryTypeAndQuantity, '2x AA');
+      assert.strictEqual(stue.area, 'Stue');
+      assert.strictEqual(stue.buttonEntityId, 'button.danfoss_stue_battery_replaced');
+      assert.strictEqual(stue.isLow, false);
+      assert.strictEqual(stue.entityId, 'climate.danfoss_stue', 'Clicking opens the climate entity');
+
+      const kokken = devices.find(d => d.name === 'Køkken Termostat');
+      assert.ok(kokken, 'Køkken Termostat should be found');
+      assert.strictEqual(kokken.batteryLevel, 65, 'Battery level should be extracted from climate attributes');
+      assert.strictEqual(kokken.batteryTypeAndQuantity, '2x AA');
+      assert.strictEqual(kokken.area, 'Køkken');
+      assert.strictEqual(kokken.buttonEntityId, 'button.danfoss_kokken_battery_replaced');
+      assert.strictEqual(kokken.isLow, false);
+      assert.strictEqual(kokken.entityId, 'climate.danfoss_kokken');
+
+      const sovevaerelse = devices.find(d => d.name === 'Soveværelse Termostat');
+      assert.ok(sovevaerelse, 'Soveværelse Termostat should be found');
+      assert.strictEqual(sovevaerelse.batteryLevel, 15, 'Battery level should be extracted from climate attributes');
+      assert.strictEqual(sovevaerelse.batteryTypeAndQuantity, '2x AA');
+      assert.strictEqual(sovevaerelse.area, 'Soveværelse');
+      assert.strictEqual(sovevaerelse.buttonEntityId, 'button.danfoss_sovevaerelse_battery_replaced');
+      assert.strictEqual(sovevaerelse.isLow, true);
+      assert.strictEqual(sovevaerelse.entityId, 'climate.danfoss_sovevaerelse');
+    });
+
+    it('Scenario: Device with both battery_plus and battery_type merges into exactly 1 device without duplicate rows', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.motion_sensor_battery_type': {
+            entity_id: 'sensor.motion_sensor_battery_type',
+            state: 'CR2032',
+            attributes: {
+              battery_type: 'CR2032',
+              battery_quantity: 1,
+              friendly_name: 'Living Room Motion Battery Type',
+            },
+          },
+          'sensor.motion_sensor_battery_plus': {
+            entity_id: 'sensor.motion_sensor_battery_plus',
+            state: '72',
+            attributes: {
+              device_class: 'battery',
+              friendly_name: 'Living Room Motion Battery+',
+              source_entity_id: 'sensor.motion_sensor_hardware_battery',
+            },
+          },
+          'button.motion_sensor_battery_replaced': {
+            entity_id: 'button.motion_sensor_battery_replaced',
+            state: '2024-11-20',
+            attributes: {
+              friendly_name: 'Living Room Motion Battery Replaced',
+            },
+          },
+        },
+      };
+
+      const registries: HomeAssistantRegistries = {
+        devices: new Map([
+          ['dev_motion', { id: 'dev_motion', name: 'Living Room Motion' }],
+        ]),
+        entities: new Map([
+          ['sensor.motion_sensor_battery_type', { entity_id: 'sensor.motion_sensor_battery_type', device_id: 'dev_motion', platform: 'battery_notes' }],
+          ['sensor.motion_sensor_battery_plus', { entity_id: 'sensor.motion_sensor_battery_plus', device_id: 'dev_motion', platform: 'battery_notes' }],
+          ['button.motion_sensor_battery_replaced', { entity_id: 'button.motion_sensor_battery_replaced', device_id: 'dev_motion', platform: 'battery_notes' }],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+
+      // Must NEVER produce 2 rows for the same device (one for level, one for type)
+      assert.strictEqual(devices.length, 1);
+      assert.strictEqual(devices[0].name, 'Living Room Motion');
+      assert.strictEqual(devices[0].batteryLevel, 72);
+      assert.strictEqual(devices[0].batteryType, 'CR2032');
+      assert.strictEqual(devices[0].batteryTypeAndQuantity, 'CR2032');
+      assert.strictEqual(devices[0].hasPlusSensor, true);
+      assert.strictEqual(devices[0].buttonEntityId, 'button.motion_sensor_battery_replaced');
+    });
+
+    it('Scenario: Multiple devices in hass.states with mixed alphabetical order attach helpers to correct rooms', () => {
+      const hass: HomeAssistant = {
+        states: {
+          // Binary sensors first alphabetically (as happens in HA)
+          'binary_sensor.room_a_battery_low': {
+            entity_id: 'binary_sensor.room_a_battery_low',
+            state: 'off',
+            attributes: { friendly_name: 'Room A Battery Low' },
+          },
+          'binary_sensor.room_b_battery_low': {
+            entity_id: 'binary_sensor.room_b_battery_low',
+            state: 'on',
+            attributes: { friendly_name: 'Room B Battery Low' },
+          },
+          // Buttons next
+          'button.room_a_battery_replaced': {
+            entity_id: 'button.room_a_battery_replaced',
+            state: '2025-01-01',
+            attributes: { friendly_name: 'Room A Battery Replaced' },
+          },
+          'button.room_b_battery_replaced': {
+            entity_id: 'button.room_b_battery_replaced',
+            state: '2025-01-02',
+            attributes: { friendly_name: 'Room B Battery Replaced' },
+          },
+          // Sensors last
+          'sensor.room_a_battery_type': {
+            entity_id: 'sensor.room_a_battery_type',
+            state: 'AA',
+            attributes: { battery_type: 'AA', friendly_name: 'Room A Battery Type' },
+          },
+          'sensor.room_b_battery_type': {
+            entity_id: 'sensor.room_b_battery_type',
+            state: 'AAA',
+            attributes: { battery_type: 'AAA', friendly_name: 'Room B Battery Type' },
+          },
+          'sensor.room_a_battery': {
+            entity_id: 'sensor.room_a_battery',
+            state: '90',
+            attributes: { device_class: 'battery', friendly_name: 'Room A Battery' },
+          },
+          'sensor.room_b_battery': {
+            entity_id: 'sensor.room_b_battery',
+            state: '10',
+            attributes: { device_class: 'battery', friendly_name: 'Room B Battery' },
+          },
+        },
+      };
+
+      const registries: HomeAssistantRegistries = {
+        devices: new Map([
+          ['dev_multi', { id: 'dev_multi', name: 'Multi System' }],
+        ]),
+        entities: new Map([
+          ['sensor.room_a_battery_type', { entity_id: 'sensor.room_a_battery_type', device_id: 'dev_multi', platform: 'battery_notes' }],
+          ['button.room_a_battery_replaced', { entity_id: 'button.room_a_battery_replaced', device_id: 'dev_multi', platform: 'battery_notes' }],
+          ['binary_sensor.room_a_battery_low', { entity_id: 'binary_sensor.room_a_battery_low', device_id: 'dev_multi', platform: 'battery_notes' }],
+
+          ['sensor.room_b_battery_type', { entity_id: 'sensor.room_b_battery_type', device_id: 'dev_multi', platform: 'battery_notes' }],
+          ['button.room_b_battery_replaced', { entity_id: 'button.room_b_battery_replaced', device_id: 'dev_multi', platform: 'battery_notes' }],
+          ['binary_sensor.room_b_battery_low', { entity_id: 'binary_sensor.room_b_battery_low', device_id: 'dev_multi', platform: 'battery_notes' }],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+      assert.strictEqual(devices.length, 2);
+
+      const roomA = devices.find(d => d.name === 'Room A');
+      assert.ok(roomA);
+      assert.strictEqual(roomA.batteryLevel, 90);
+      assert.strictEqual(roomA.batteryType, 'AA');
+      assert.strictEqual(roomA.buttonEntityId, 'button.room_a_battery_replaced');
+      assert.strictEqual(roomA.isLow, false);
+
+      const roomB = devices.find(d => d.name === 'Room B');
+      assert.ok(roomB);
+      assert.strictEqual(roomB.batteryLevel, 10);
+      assert.strictEqual(roomB.batteryType, 'AAA');
+      assert.strictEqual(roomB.buttonEntityId, 'button.room_b_battery_replaced');
+      assert.strictEqual(roomB.isLow, true);
+    });
+  });
 });
 
 

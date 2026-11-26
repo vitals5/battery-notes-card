@@ -29,6 +29,24 @@ export const GENERIC_NAMES = new Set([
   'battery status',
   'batteriestatus',
   'batterie status',
+  'batteri lav',
+  'batteri-type',
+  'batteri type',
+  'batteritype',
+  'batteri',
+  'batteriniveau',
+  'batteristand',
+  'batteri udskiftet',
+  'sidst udskiftet',
+  'batterij bijna leeg',
+  'batterij-type',
+  'batterij type',
+  'batterijtype',
+  'batterij',
+  'batterijniveau',
+  'batterijstand',
+  'batterij vervangen',
+  'laatst vervangen',
 ]);
 
 export function isGenericName(name: string | null | undefined): boolean {
@@ -36,7 +54,7 @@ export function isGenericName(name: string | null | undefined): boolean {
   const n = name.toLowerCase().trim();
   if (GENERIC_NAMES.has(n)) return true;
   if (
-    /^(?:battery|batterie)[_\-\s]*(?:type|typ|low|fast[_\-\s]*leer|replaced|ersetzt|last[_\-\s]*replaced|plus|\+|status)*(?:[_\-\s]*\d+)?$/i.test(
+    /^(?:battery|batterie|batteri|batterij)[_\-\s]*(?:type|typ|low|lav|bijna[_\-\s]*leeg|fast[_\-\s]*leer|replaced|ersetzt|udskiftet|vervangen|last[_\-\s]*replaced|plus|\+|status)*(?:[_\-\s]*\d+)?$/i.test(
       n
     )
   ) {
@@ -49,11 +67,11 @@ export function cleanDeviceName(name: string | null | undefined): string {
   if (!name) return '';
   return name
     .replace(
-      /\s*(?:[-–—:]|\()\s*(?:Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Batterie Plus|Batterie-Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery Status|Batteriestatus|Batterie Status|Batteriniveau|Batteristand|Batteri|Battery|Batterie)\s*\)?$/i,
+      /\s*(?:[-–—:]|\()\s*(?:Battery Type|Batterietyp|Batterie-Typ|Batteritype|Batteri Type|Batterijtype|Batterij Type|Battery Plus|Batterie Plus|Batterie-Plus|Battery\+|Batterie\+|Batteri\+|Batterij\+|Batteriestand|Battery Level|Batteriniveau|Batterijniveau|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Sidst udskiftet|Laatst vervangen|Battery Replaced|Batterie ersetzt|Batteri udskiftet|Batterij vervangen|Battery Low|Batterie fast leer|Batteri lav|Batterij bijna leeg|Batterie schwach|Battery Status|Batteriestatus|Batterie Status|Batteri|Battery|Batterie|Batterij)\s*\)?$/i,
       ''
     )
     .replace(
-      /\s+(?:Battery Type|Batterietyp|Batterie-Typ|Battery Plus|Batterie Plus|Batterie-Plus|Battery\+|Batterie\+|Batteriestand|Battery Level|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Battery Replaced|Batterie ersetzt|Battery Low|Batterie fast leer|Batterie schwach|Battery Status|Batteriestatus|Batterie Status|Batteriniveau|Batteristand|Batteri|Battery|Batterie)$/i,
+      /\s+(?:Battery Type|Batterietyp|Batterie-Typ|Batteritype|Batteri Type|Batterijtype|Batterij Type|Battery Plus|Batterie Plus|Batterie-Plus|Battery\+|Batterie\+|Batteri\+|Batterij\+|Batteriestand|Battery Level|Batteriniveau|Batterijniveau|Last Replaced|Letzter Batteriewechsel|Zuletzt gewechselt|Sidst udskiftet|Laatst vervangen|Battery Replaced|Batterie ersetzt|Batteri udskiftet|Batterij vervangen|Battery Low|Batterie fast leer|Batteri lav|Batterij bijna leeg|Batterie schwach|Battery Status|Batteriestatus|Batterie Status|Batteri|Battery|Batterie|Batterij)$/i,
       ''
     )
     .replace(/[\s\-_:–—()]+$/g, '')
@@ -99,14 +117,16 @@ export function formatTechnicalDeviceName(baseName: string): string {
 export function getBaseName(entityId: string): string {
   const objectId = entityId.includes('.') ? entityId.split('.')[1] : entityId;
   return objectId
-    .replace(/(?:_|-)(?:battery_last_replaced|letzter_batteriewechsel|batterie_zuletzt_ersetzt)$/i, '')
-    .replace(/(?:_|-)(?:battery_type|batterie_typ|batterie-typ|batterietyp|batterie_art)$/i, '')
-    .replace(/(?:_|-)(?:battery_plus_low|battery_low|batterie_fast_leer|batterie_schwach|niedriger_batteriestand)$/i, '')
-    .replace(/(?:_|-)(?:battery_replaced|batterie_ersetzt|batterie_ersetzen)$/i, '')
-    .replace(/(?:_|-)(?:battery_plus|batterie_plus|battery\+|batterie\+)$/i, '')
-    .replace(/(?:_|-)(?:battery_level|batteriestand|batterie_stand|battery|batterie)$/i, '')
+    .replace(/(?:_|-)(?:battery_last_replaced|letzter_batteriewechsel|batterie_zuletzt_ersetzt|sidst_udskiftet|laatst_vervangen)$/i, '')
+    .replace(/(?:_|-)(?:battery_type|batterie_typ|batterie-typ|batterietyp|batterie_art|batteritype|batterijtype)$/i, '')
+    .replace(/(?:_|-)(?:battery_plus_low|battery_low|batterie_fast_leer|batterie_schwach|niedriger_batteriestand|batteri_lav|batterij_bijna_leeg)$/i, '')
+    .replace(/(?:_|-)(?:battery_replaced|batterie_ersetzt|batterie_ersetzen|batteri_udskiftet|batterij_vervangen)$/i, '')
+    .replace(/(?:_|-)(?:battery_plus|batterie_plus|battery\+|batterie\+|batteri_plus|batterij_plus)$/i, '')
+    .replace(/(?:_|-)(?:battery_level|batteriestand|batterie_stand|batteriniveau|batterijniveau|battery|batterie|batteri|batterij)$/i, '')
     .replace(/_battery$/, '')
-    .replace(/_batterie$/, '');
+    .replace(/_batterie$/, '')
+    .replace(/_batteri$/, '')
+    .replace(/_batterij$/, '');
 }
 
 export function isTypeSensor(e: HassEntity, reg?: any): boolean {
@@ -120,11 +140,14 @@ export function isTypeSensor(e: HassEntity, reg?: any): boolean {
     id.endsWith('_batterie-typ') ||
     id.endsWith('_batterie_art') ||
     id.endsWith('_batterietyp') ||
+    id.endsWith('_batteritype') ||
+    id.endsWith('_batterijtype') ||
     id === 'sensor.battery_type' ||
     id === 'sensor.batterie_typ' ||
-    /^sensor\.batterie[_\-]typ(?:_\d+)?$/i.test(id) ||
-    /^sensor\.battery[_\-]type(?:_\d+)?$/i.test(id) ||
-    (e.attributes.battery_type !== undefined && !e.attributes.device_class)
+    id === 'sensor.batteritype' ||
+    id === 'sensor.batterijtype' ||
+    /^sensor\.(?:battery|batterie|batteri|batterij)[_\-]typ(?:e)?(?:_\d+)?$/i.test(id) ||
+    (e.attributes.battery_type !== undefined && !e.attributes.device_class && (!reg?.platform || reg.platform === 'battery_notes'))
   );
 }
 
@@ -202,7 +225,32 @@ export function extractBatteryDevices(
   const sourceEntityMap = new Map<string, DeviceGroup>();
   const deviceGroupsMap = new Map<string, DeviceGroup[]>();
 
-  // 1. Collect all Battery Notes entities and group by baseName, source_entity_id, or deviceId
+  // Helper function to register a group in maps
+  const registerGroup = (g: DeviceGroup) => {
+    if (g.deviceId) {
+      if (!deviceGroupsMap.has(g.deviceId)) {
+        deviceGroupsMap.set(g.deviceId, []);
+      }
+      const list = deviceGroupsMap.get(g.deviceId)!;
+      if (!list.includes(g)) {
+        list.push(g);
+      }
+    }
+    if (g.baseName && !isGenericName(g.baseName) && !baseNameMap.has(g.baseName)) {
+      baseNameMap.set(g.baseName, g);
+    }
+    for (const e of g.entities) {
+      const src = e.attributes?.source_entity_id;
+      if (src && !sourceEntityMap.has(src)) {
+        sourceEntityMap.set(src, g);
+      }
+    }
+  };
+
+  // Classify all entities into Anchors (plusSensor, typeSensor, sourceEntityId) and Helpers (button, binary_sensor, last_replaced)
+  const anchorEntities: { entityId: string; entity: HassEntity; reg: any }[] = [];
+  const helperEntities: { entityId: string; entity: HassEntity; reg: any }[] = [];
+
   for (const [entityId, entity] of Object.entries(states)) {
     const attrs = entity.attributes || {};
     const reg = registries?.entities?.get(entityId) || hass.entities?.[entityId];
@@ -221,10 +269,24 @@ export function extractBatteryDevices(
       continue;
     }
 
+    const isHelper =
+      isButtonEntity(entity, reg) ||
+      isLowSensor(entity, reg) ||
+      isReplacedSensor(entity, reg);
+
+    if (isHelper) {
+      helperEntities.push({ entityId, entity, reg });
+    } else {
+      anchorEntities.push({ entityId, entity, reg });
+    }
+  }
+
+  // PASS 1: Group all Primary / Anchor entities
+  for (const { entityId, entity, reg } of anchorEntities) {
+    const attrs = entity.attributes || {};
     const deviceId: string | undefined = reg?.device_id || attrs.device_id;
     const sourceEntityId: string | undefined = attrs.source_entity_id;
 
-    // Determine baseName: prefer source_entity_id if baseName of entityId would be generic
     let rawBase = getBaseName(entityId);
     if (sourceEntityId && (isGenericName(rawBase) || !rawBase)) {
       rawBase = getBaseName(sourceEntityId);
@@ -234,13 +296,7 @@ export function extractBatteryDevices(
     }
 
     const baseName = rawBase;
-
     let group: DeviceGroup | null = null;
-
-    const isHelper =
-      isButtonEntity(entity, reg) ||
-      isLowSensor(entity, reg) ||
-      isReplacedSensor(entity, reg);
 
     if (sourceEntityId && sourceEntityMap.has(sourceEntityId)) {
       group = sourceEntityMap.get(sourceEntityId)!;
@@ -248,8 +304,6 @@ export function extractBatteryDevices(
       group = baseNameMap.get(baseName)!;
     } else if (deviceId && deviceGroupsMap.has(deviceId)) {
       const existingList = deviceGroupsMap.get(deviceId)!;
-      // If there's an existing group for this device that has a generic baseName,
-      // attach to it and promote its baseName if the new entity has a non-generic one!
       const genericGroup = existingList.find(g => isGenericName(g.baseName));
       if (genericGroup) {
         group = genericGroup;
@@ -257,19 +311,31 @@ export function extractBatteryDevices(
           genericGroup.baseName = baseName;
           baseNameMap.set(baseName, genericGroup);
         }
-      } else if (isHelper) {
-        // A companion helper entity (button, binary sensor, last replaced) never spawns a new battery device group!
-        if (existingList.length === 1) {
-          group = existingList[0];
-        } else {
-          // If multiple groups exist (multi-battery device), find the closest group matching baseName
-          const match = existingList.find(
-            g => baseName && (baseName.startsWith(g.baseName) || g.baseName.startsWith(baseName))
-          );
-          group = match || existingList[0];
+      } else if (existingList.length === 1) {
+        // Single-battery device: combine level and type sensors into the same group
+        const g0 = existingList[0];
+        const g0HasPlus = g0.entities.some(e => isPlusSensor(e, registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id]));
+        const g0HasType = g0.entities.some(e => isTypeSensor(e, registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id]));
+        const thisIsPlus = isPlusSensor(entity, reg);
+        const thisIsType = isTypeSensor(entity, reg);
+
+        if ((g0HasPlus && thisIsType && !g0HasType) || (g0HasType && thisIsPlus && !g0HasPlus)) {
+          const g0Src = g0.entities.find(e => e.attributes?.source_entity_id)?.attributes?.source_entity_id;
+          if (!g0Src || !sourceEntityId || g0Src === sourceEntityId) {
+            group = g0;
+          }
+        } else if (isGenericName(baseName) || isGenericName(g0.baseName)) {
+          group = g0;
+        } else if (baseName.startsWith(g0.baseName) || g0.baseName.startsWith(baseName)) {
+          group = g0;
         }
-      } else if (isGenericName(baseName) && existingList.length === 1) {
-        group = existingList[0];
+      } else {
+        const match = existingList.find(
+          g => baseName && (baseName.startsWith(g.baseName) || g.baseName.startsWith(baseName))
+        );
+        if (match) {
+          group = match;
+        }
       }
     }
 
@@ -288,31 +354,128 @@ export function extractBatteryDevices(
         entities: [],
       };
       groups.push(group);
-
-      if (deviceId) {
-        if (!deviceGroupsMap.has(deviceId)) {
-          deviceGroupsMap.set(deviceId, []);
-        }
-        deviceGroupsMap.get(deviceId)!.push(group);
-      }
+      registerGroup(group);
     } else if (deviceId && !group.deviceId) {
       group.deviceId = deviceId;
-      if (!deviceGroupsMap.has(deviceId)) {
-        deviceGroupsMap.set(deviceId, []);
-      }
-      if (!deviceGroupsMap.get(deviceId)!.includes(group)) {
-        deviceGroupsMap.get(deviceId)!.push(group);
-      }
+      registerGroup(group);
     }
 
-    if (baseName && !isGenericName(baseName) && !baseNameMap.has(baseName)) {
-      baseNameMap.set(baseName, group);
-    }
     if (sourceEntityId && !sourceEntityMap.has(sourceEntityId)) {
       sourceEntityMap.set(sourceEntityId, group);
     }
+    if (baseName && !isGenericName(baseName) && !baseNameMap.has(baseName)) {
+      baseNameMap.set(baseName, group);
+    }
 
     group.entities.push(entity);
+  }
+
+  // PASS 2: Attach Helper Entities (Button, Low Sensor, Last Replaced Sensor)
+  for (const { entityId, entity, reg } of helperEntities) {
+    const attrs = entity.attributes || {};
+    const deviceId: string | undefined = reg?.device_id || attrs.device_id;
+    const sourceEntityId: string | undefined = attrs.source_entity_id;
+
+    let rawBase = getBaseName(entityId);
+    if (sourceEntityId && (isGenericName(rawBase) || !rawBase)) {
+      rawBase = getBaseName(sourceEntityId);
+    }
+    if (attrs.device_name && (isGenericName(rawBase) || !rawBase)) {
+      rawBase = getBaseName(attrs.device_name);
+    }
+
+    const baseName = rawBase;
+    let group: DeviceGroup | null = null;
+
+    if (sourceEntityId && sourceEntityMap.has(sourceEntityId)) {
+      group = sourceEntityMap.get(sourceEntityId)!;
+    } else if (baseName && !isGenericName(baseName) && baseNameMap.has(baseName)) {
+      group = baseNameMap.get(baseName)!;
+    } else if (deviceId && deviceGroupsMap.has(deviceId)) {
+      const existingList = deviceGroupsMap.get(deviceId)!;
+      if (existingList.length === 1) {
+        group = existingList[0];
+      } else {
+        const match = existingList.find(
+          g => baseName && (baseName.startsWith(g.baseName) || g.baseName.startsWith(baseName))
+        );
+        group = match || existingList[0];
+      }
+    } else if (baseName && !isGenericName(baseName)) {
+      const match = groups.find(
+        g => g.baseName && (baseName.startsWith(g.baseName) || g.baseName.startsWith(baseName))
+      );
+      if (match) {
+        group = match;
+      }
+    }
+
+    if (!group) {
+      const groupId =
+        deviceId && baseName && !isGenericName(baseName)
+          ? `dev_${deviceId}_${baseName}`
+          : deviceId
+          ? `dev_${deviceId}`
+          : `base_${baseName}`;
+
+      group = {
+        id: groupId,
+        deviceId,
+        baseName,
+        entities: [],
+      };
+      groups.push(group);
+      registerGroup(group);
+    }
+
+    group.entities.push(entity);
+  }
+
+  // POST-PROCESSING MERGE:
+  // Ensure that no single device has two separate groups where one has only plusSensor and the other has only typeSensor!
+  for (const [, devGroups] of deviceGroupsMap.entries()) {
+    if (devGroups.length <= 1) continue;
+
+    for (let i = 0; i < devGroups.length; i++) {
+      const g1 = devGroups[i];
+      if (!groups.includes(g1)) continue;
+
+      const g1Plus = g1.entities.find(e => isPlusSensor(e, registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id]));
+      const g1Type = g1.entities.find(e => isTypeSensor(e, registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id]));
+
+      for (let j = i + 1; j < devGroups.length; j++) {
+        const g2 = devGroups[j];
+        if (!groups.includes(g2)) continue;
+
+        const g2Plus = g2.entities.find(e => isPlusSensor(e, registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id]));
+        const g2Type = g2.entities.find(e => isTypeSensor(e, registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id]));
+
+        const complementary = (g1Plus && !g1Type && g2Type && !g2Plus) || (g1Type && !g1Plus && g2Plus && !g2Type);
+
+        if (complementary) {
+          const g1Src = g1.entities.find(e => e.attributes?.source_entity_id)?.attributes?.source_entity_id;
+          const g2Src = g2.entities.find(e => e.attributes?.source_entity_id)?.attributes?.source_entity_id;
+
+          const sameSource = !g1Src || !g2Src || g1Src === g2Src;
+          const compatibleBase =
+            isGenericName(g1.baseName) ||
+            isGenericName(g2.baseName) ||
+            g1.baseName === g2.baseName ||
+            g1.baseName.startsWith(g2.baseName) ||
+            g2.baseName.startsWith(g1.baseName);
+
+          if (sameSource && (compatibleBase || devGroups.length === 2)) {
+            g1.entities.push(...g2.entities);
+            if (isGenericName(g1.baseName) && !isGenericName(g2.baseName)) {
+              g1.baseName = g2.baseName;
+            }
+            groups = groups.filter(g => g !== g2);
+            devGroups.splice(j, 1);
+            j--;
+          }
+        }
+      }
+    }
   }
 
   const result: BatteryDeviceItem[] = [];
@@ -392,19 +555,39 @@ export function extractBatteryDevices(
     const candidates = [
       `sensor.${baseName}_battery`,
       `sensor.${baseName}_batterie`,
+      `sensor.${baseName}_batteri`,
+      `sensor.${baseName}_batterij`,
       `sensor.${baseName}_battery_level`,
       `sensor.${baseName}_batteriestand`,
       `sensor.${baseName}_batterie_stand`,
+      `sensor.${baseName}_batteriniveau`,
+      `sensor.${baseName}_batterijniveau`,
       `sensor.${baseName}`,
     ];
     if (baseWithoutSub && baseWithoutSub !== baseName) {
       candidates.push(
         `sensor.${baseWithoutSub}_battery`,
         `sensor.${baseWithoutSub}_batterie`,
+        `sensor.${baseWithoutSub}_batteri`,
+        `sensor.${baseWithoutSub}_batterij`,
         `sensor.${baseWithoutSub}_battery_level`,
         `sensor.${baseWithoutSub}_batteriestand`,
         `sensor.${baseWithoutSub}`
       );
+    }
+    if (allAttrs.source_entity_id) {
+      const srcBase = getBaseName(allAttrs.source_entity_id);
+      if (srcBase && srcBase !== baseName) {
+        candidates.push(
+          `sensor.${srcBase}_battery`,
+          `sensor.${srcBase}_batterie`,
+          `sensor.${srcBase}_batteri`,
+          `sensor.${srcBase}_battery_level`,
+          `sensor.${srcBase}_batteriestand`,
+          `sensor.${srcBase}_batteriniveau`,
+          `sensor.${srcBase}`
+        );
+      }
     }
     for (const c of candidates) {
       if (states[c]) {
@@ -464,20 +647,51 @@ export function extractBatteryDevices(
 
     if (plusSensor && !isNaN(parseFloat(plusSensor.state))) {
       batteryLevel = parseFloat(plusSensor.state);
-    } else if (
-      allAttrs.source_entity_id &&
-      states[allAttrs.source_entity_id] &&
-      !isNaN(parseFloat(states[allAttrs.source_entity_id].state))
-    ) {
-      batteryLevel = parseFloat(states[allAttrs.source_entity_id].state);
-    } else if (companionBatterySensor && !isNaN(parseFloat(companionBatterySensor.state))) {
-      batteryLevel = parseFloat(companionBatterySensor.state);
-    } else if (
+    } else if (allAttrs.source_entity_id && states[allAttrs.source_entity_id]) {
+      const src = states[allAttrs.source_entity_id];
+      if (src.attributes?.battery_level !== undefined && !isNaN(Number(src.attributes.battery_level))) {
+        batteryLevel = Number(src.attributes.battery_level);
+      } else if (src.attributes?.battery !== undefined && !isNaN(Number(src.attributes.battery))) {
+        batteryLevel = Number(src.attributes.battery);
+      } else if (src.attributes?.battery_percentage !== undefined && !isNaN(Number(src.attributes.battery_percentage))) {
+        batteryLevel = Number(src.attributes.battery_percentage);
+      } else if (!isNaN(parseFloat(src.state))) {
+        batteryLevel = parseFloat(src.state);
+      }
+    }
+
+    if (batteryLevel === null) {
+      for (const e of entities) {
+        if (e.attributes?.battery_level !== undefined && !isNaN(Number(e.attributes.battery_level))) {
+          batteryLevel = Number(e.attributes.battery_level);
+          break;
+        }
+        if (e.attributes?.battery !== undefined && !isNaN(Number(e.attributes.battery))) {
+          batteryLevel = Number(e.attributes.battery);
+          break;
+        }
+        if (e.attributes?.battery_percentage !== undefined && !isNaN(Number(e.attributes.battery_percentage))) {
+          batteryLevel = Number(e.attributes.battery_percentage);
+          break;
+        }
+      }
+    }
+
+    if (batteryLevel === null && companionBatterySensor) {
+      if (companionBatterySensor.attributes?.battery_level !== undefined && !isNaN(Number(companionBatterySensor.attributes.battery_level))) {
+        batteryLevel = Number(companionBatterySensor.attributes.battery_level);
+      } else if (!isNaN(parseFloat(companionBatterySensor.state))) {
+        batteryLevel = parseFloat(companionBatterySensor.state);
+      }
+    }
+
+    if (
+      batteryLevel === null &&
       allAttrs.battery_last_reported_level !== undefined &&
       !isNaN(Number(allAttrs.battery_last_reported_level))
     ) {
       batteryLevel = Number(allAttrs.battery_last_reported_level);
-    } else if (deviceBatterySensor && !isNaN(parseFloat(deviceBatterySensor.state))) {
+    } else if (batteryLevel === null && deviceBatterySensor && !isNaN(parseFloat(deviceBatterySensor.state))) {
       batteryLevel = parseFloat(deviceBatterySensor.state);
     }
 
@@ -764,11 +978,17 @@ export function extractBatteryDevices(
       companionBatterySensor?.state === 'unavailable' ||
       deviceBatterySensor?.state === 'unavailable';
 
+    const clickableEntityId =
+      plusSensor?.entity_id ||
+      (allAttrs.source_entity_id && states[allAttrs.source_entity_id] ? allAttrs.source_entity_id : undefined) ||
+      companionBatterySensor?.entity_id ||
+      primaryEntity.entity_id;
+
     result.push({
       id: group.id,
       deviceId: resolvedDeviceId || deviceId,
       sourceEntityId: allAttrs.source_entity_id,
-      entityId: primaryEntity.entity_id,
+      entityId: clickableEntityId,
       name,
       area: areaName,
       batteryLevel,

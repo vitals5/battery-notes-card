@@ -280,14 +280,23 @@ export class BatteryNotesCard extends LitElement {
     const allDevices = this._getBatteryDevices();
 
     // Summary counters
-    const totalCount = allDevices.length;
-    const lowCount = allDevices.filter(d => d.isLow || d.isUnavailable).length;
+    let devicesForSummary = allDevices;
+    if (this._config.battery_plus_only) {
+      devicesForSummary = devicesForSummary.filter(d => d.hasPlusSensor);
+    }
+    const totalCount = devicesForSummary.length;
+    const lowCount = devicesForSummary.filter(d => d.isLow || d.isUnavailable).length;
     const okCount = totalCount - lowCount;
 
     // Filter devices
     let filtered = allDevices.filter(device => {
       // Hide unavailable
       if (this._config.hide_unavailable && device.isUnavailable) {
+        return false;
+      }
+
+      // Filter Battery+ only
+      if (this._config.battery_plus_only && !device.hasPlusSensor) {
         return false;
       }
 

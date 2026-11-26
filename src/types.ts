@@ -89,6 +89,7 @@ export interface CardFilterConfig {
   threshold?: number;
   hide_unavailable?: boolean;
   unavailable_first?: boolean;
+  battery_plus_only?: boolean;
   search?: boolean;
 }
 
@@ -106,6 +107,7 @@ export interface BatteryNotesCardConfig {
   filter_threshold?: number;
   hide_unavailable?: boolean;
   unavailable_first?: boolean;
+  battery_plus_only?: boolean;
   show_header?: boolean;
   show_summary?: boolean;
   show_search?: boolean;
@@ -139,6 +141,7 @@ export interface BatteryDeviceItem {
   note?: string;
   buttonEntityId?: string;
   isUnavailable: boolean;
+  hasPlusSensor: boolean;
   state: string;
 }
 

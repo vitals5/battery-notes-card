@@ -1460,6 +1460,173 @@ describe('Device Extractor Unit Tests', () => {
       assert.strictEqual(conf3.unavailable_first, true);
     });
   });
+
+  describe('Battery+ Filtering & Non-Battery-Notes Entity Protection', () => {
+    it('Scenario: APC UPS sensor.apcups_battery_type with platform apcupsd is strictly excluded', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.apcups_battery_type': {
+            entity_id: 'sensor.apcups_battery_type',
+            state: 'PbAc',
+            attributes: {
+              friendly_name: 'Apcups Batteriechemie',
+            },
+          },
+        },
+      };
+
+      const registries: HomeAssistantRegistries = {
+        devices: new Map([['dev_apcups', { id: 'dev_apcups', name: 'Apcups' }]]),
+        entities: new Map([
+          [
+            'sensor.apcups_battery_type',
+            { entity_id: 'sensor.apcups_battery_type', device_id: 'dev_apcups', platform: 'apcupsd' },
+          ],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+      assert.strictEqual(devices.length, 0);
+    });
+
+    it('Scenario: Device with only battery_type, button, and binary_sensor groups into exactly 1 device, never creating standalone button or binary sensor rows', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.haustur_battery_type': {
+            entity_id: 'sensor.haustur_battery_type',
+            state: 'Rechargeable',
+            attributes: {
+              friendly_name: 'Batterie-Typ',
+              battery_type: 'Rechargeable',
+            },
+          },
+          'button.haustur_battery_replaced': {
+            entity_id: 'button.haustur_battery_replaced',
+            state: '2026-11-26T08:00:00Z',
+            attributes: {
+              friendly_name: 'Batterie ersetzt',
+            },
+          },
+          'binary_sensor.haustur_battery_low': {
+            entity_id: 'binary_sensor.haustur_battery_low',
+            state: 'off',
+            attributes: {
+              friendly_name: 'Batterie fast leer',
+            },
+          },
+        },
+      };
+
+      const registries: HomeAssistantRegistries = {
+        devices: new Map([['dev_haustur', { id: 'dev_haustur', name: 'Haustür' }]]),
+        entities: new Map([
+          [
+            'sensor.haustur_battery_type',
+            { entity_id: 'sensor.haustur_battery_type', device_id: 'dev_haustur', platform: 'battery_notes' },
+          ],
+          [
+            'button.haustur_battery_replaced',
+            { entity_id: 'button.haustur_battery_replaced', device_id: 'dev_haustur', platform: 'battery_notes' },
+          ],
+          [
+            'binary_sensor.haustur_battery_low',
+            { entity_id: 'binary_sensor.haustur_battery_low', device_id: 'dev_haustur', platform: 'battery_notes' },
+          ],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+      assert.strictEqual(devices.length, 1);
+      assert.strictEqual(devices[0].name, 'Haustür');
+      assert.strictEqual(devices[0].batteryType, 'Rechargeable');
+      assert.strictEqual(devices[0].buttonEntityId, 'button.haustur_battery_replaced');
+      assert.strictEqual(devices[0].hasPlusSensor, false);
+    });
+
+    it('Scenario: Standalone button and binary sensor without typeSensor or plusSensor are completely discarded', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'button.mystery_battery_replaced': {
+            entity_id: 'button.mystery_battery_replaced',
+            state: '2026-11-26T08:00:00Z',
+            attributes: {
+              friendly_name: 'Batterie ersetzt',
+            },
+          },
+          'binary_sensor.mystery_battery_low': {
+            entity_id: 'binary_sensor.mystery_battery_low',
+            state: 'off',
+            attributes: {
+              friendly_name: 'Batterie fast leer',
+            },
+          },
+        },
+      };
+
+      const registries: HomeAssistantRegistries = {
+        entities: new Map([
+          ['button.mystery_battery_replaced', { entity_id: 'button.mystery_battery_replaced', platform: 'battery_notes' }],
+          ['binary_sensor.mystery_battery_low', { entity_id: 'binary_sensor.mystery_battery_low', platform: 'battery_notes' }],
+        ]),
+      };
+
+      const devices = extractBatteryDevices(hass, defaultConfig, registries);
+      assert.strictEqual(devices.length, 0);
+    });
+
+    it('Scenario: battery_plus_only option filters out devices that do not have a sensor.*_battery_plus entity', () => {
+      const hass: HomeAssistant = {
+        states: {
+          'sensor.haustur_battery_type': {
+            entity_id: 'sensor.haustur_battery_type',
+            state: 'Rechargeable',
+            attributes: {
+              friendly_name: 'Haustür Batterie-Typ',
+              battery_type: 'Rechargeable',
+            },
+          },
+          'sensor.xmi_sensor_battery_plus': {
+            entity_id: 'sensor.xmi_sensor_battery_plus',
+            state: '85',
+            attributes: {
+              friendly_name: 'XMI_Shock1 Battery+',
+              battery_type: 'CR2032',
+            },
+          },
+        },
+      };
+
+      const allDevices = extractBatteryDevices(hass, defaultConfig);
+      assert.strictEqual(allDevices.length, 2);
+      assert.strictEqual(allDevices.find(d => d.name === 'Haustür')?.hasPlusSensor, false);
+      assert.strictEqual(allDevices.find(d => d.name === 'XMI_Shock1')?.hasPlusSensor, true);
+
+      // Filtering with battery_plus_only
+      const plusOnlyDevices = allDevices.filter(d => d.hasPlusSensor);
+      assert.strictEqual(plusOnlyDevices.length, 1);
+      assert.strictEqual(plusOnlyDevices[0].name, 'XMI_Shock1');
+    });
+
+    it('sanitizeCardConfig preserves and sanitizes battery_plus_only option', () => {
+      const conf1 = sanitizeCardConfig({
+        type: 'custom:battery-notes-card',
+        battery_plus_only: true,
+      });
+      assert.strictEqual(conf1.battery_plus_only, true);
+
+      const conf2 = sanitizeCardConfig({
+        type: 'custom:battery-notes-card',
+        battery_plus_only: false,
+      });
+      assert.strictEqual(conf2.battery_plus_only, false);
+
+      const conf3 = sanitizeCardConfig({
+        type: 'custom:battery-notes-card',
+        battery_plus_only: ('true' as any),
+      });
+      assert.strictEqual(conf3.battery_plus_only, true);
+    });
+  });
 });
 
 

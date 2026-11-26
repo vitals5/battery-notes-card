@@ -102,7 +102,7 @@ export function getBaseName(entityId: string): string {
     .replace(/(?:_|-)(?:battery_last_replaced|letzter_batteriewechsel|batterie_zuletzt_ersetzt)$/i, '')
     .replace(/(?:_|-)(?:battery_type|batterie_typ|batterie-typ|batterietyp|batterie_art)$/i, '')
     .replace(/(?:_|-)(?:battery_plus_low|battery_low|batterie_fast_leer|batterie_schwach|niedriger_batteriestand)$/i, '')
-    .replace(/(?:_|-)(?:battery_replaced|batterie_ersetzt)$/i, '')
+    .replace(/(?:_|-)(?:battery_replaced|batterie_ersetzt|batterie_ersetzen)$/i, '')
     .replace(/(?:_|-)(?:battery_plus|batterie_plus|battery\+|batterie\+)$/i, '')
     .replace(/(?:_|-)(?:battery_level|batteriestand|batterie_stand|battery|batterie)$/i, '')
     .replace(/_battery$/, '')
@@ -111,6 +111,7 @@ export function getBaseName(entityId: string): string {
 
 export function isTypeSensor(e: HassEntity, reg?: any): boolean {
   if (!e.entity_id.startsWith('sensor.')) return false;
+  if (reg?.platform && reg.platform !== 'battery_notes') return false;
   if (reg?.translation_key === 'battery_type') return true;
   const id = e.entity_id.toLowerCase();
   return (
@@ -129,6 +130,7 @@ export function isTypeSensor(e: HassEntity, reg?: any): boolean {
 
 export function isPlusSensor(e: HassEntity, reg?: any): boolean {
   if (!e.entity_id.startsWith('sensor.')) return false;
+  if (reg?.platform && reg.platform !== 'battery_notes') return false;
   if (reg?.translation_key === 'battery_plus') return true;
   const id = e.entity_id.toLowerCase();
   return (
@@ -143,6 +145,7 @@ export function isPlusSensor(e: HassEntity, reg?: any): boolean {
 
 export function isReplacedSensor(e: HassEntity, reg?: any): boolean {
   if (!e.entity_id.startsWith('sensor.')) return false;
+  if (reg?.platform && reg.platform !== 'battery_notes') return false;
   if (reg?.translation_key === 'battery_last_replaced') return true;
   const id = e.entity_id.toLowerCase();
   return (
@@ -154,6 +157,7 @@ export function isReplacedSensor(e: HassEntity, reg?: any): boolean {
 
 export function isLowSensor(e: HassEntity, reg?: any): boolean {
   if (!e.entity_id.startsWith('binary_sensor.')) return false;
+  if (reg?.platform && reg.platform !== 'battery_notes') return false;
   if (reg?.translation_key === 'battery_low' || reg?.translation_key === 'battery_plus_low') return true;
   if (reg?.platform === 'battery_notes') return true;
   const id = e.entity_id.toLowerCase();
@@ -168,9 +172,14 @@ export function isLowSensor(e: HassEntity, reg?: any): boolean {
 
 export function isButtonEntity(e: HassEntity, reg?: any): boolean {
   if (!e.entity_id.startsWith('button.')) return false;
+  if (reg?.platform && reg.platform !== 'battery_notes') return false;
   if (reg?.translation_key === 'battery_replaced') return true;
   const id = e.entity_id.toLowerCase();
-  return id.endsWith('_battery_replaced') || id.endsWith('_batterie_ersetzt');
+  return (
+    id.endsWith('_battery_replaced') ||
+    id.endsWith('_batterie_ersetzt') ||
+    id.endsWith('_batterie_ersetzen')
+  );
 }
 
 interface DeviceGroup {
@@ -228,6 +237,11 @@ export function extractBatteryDevices(
 
     let group: DeviceGroup | null = null;
 
+    const isHelper =
+      isButtonEntity(entity, reg) ||
+      isLowSensor(entity, reg) ||
+      isReplacedSensor(entity, reg);
+
     if (sourceEntityId && sourceEntityMap.has(sourceEntityId)) {
       group = sourceEntityMap.get(sourceEntityId)!;
     } else if (baseName && !isGenericName(baseName) && baseNameMap.has(baseName)) {
@@ -242,6 +256,17 @@ export function extractBatteryDevices(
         if (baseName && !isGenericName(baseName)) {
           genericGroup.baseName = baseName;
           baseNameMap.set(baseName, genericGroup);
+        }
+      } else if (isHelper) {
+        // A companion helper entity (button, binary sensor, last replaced) never spawns a new battery device group!
+        if (existingList.length === 1) {
+          group = existingList[0];
+        } else {
+          // If multiple groups exist (multi-battery device), find the closest group matching baseName
+          const match = existingList.find(
+            g => baseName && (baseName.startsWith(g.baseName) || g.baseName.startsWith(baseName))
+          );
+          group = match || existingList[0];
         }
       } else if (isGenericName(baseName) && existingList.length === 1) {
         group = existingList[0];
@@ -335,29 +360,32 @@ export function extractBatteryDevices(
     // Device Qualification:
     // In automatic discovery mode (when config.entities is not specified or empty),
     // a device MUST qualify as a genuine Battery Notes device.
-    // Every Battery Notes device has a sensor.*_battery_plus entity (isPlusSensor),
-    // or has a battery_type sensor/attribute or platform === 'battery_notes'.
-    // Standalone binary sensors or generic entities without Battery Notes backing are strictly discarded.
+    // Standalone binary sensors or button entities without a plusSensor or typeSensor are strictly discarded.
     const isExplicitlyAllowed = Boolean(config.entities && config.entities.length > 0);
     const hasPlusSensor = Boolean(plusSensor);
+
+    const primaryEntity = plusSensor || typeSensor || entities[0];
+    if (!plusSensor && !typeSensor && !isExplicitlyAllowed) {
+      continue;
+    }
+
+    const regPrimary = registries?.entities?.get((primaryEntity || entities[0]).entity_id) || hass.entities?.[(primaryEntity || entities[0]).entity_id];
+
     const hasBatteryNotesSignature =
+      hasPlusSensor ||
       Boolean(
         typeSensor &&
           (allAttrs.battery_type !== undefined ||
             allAttrs.battery_type_and_quantity !== undefined ||
-            (typeSensor.state && typeSensor.state !== 'unknown' && typeSensor.state !== 'unavailable'))
+            typeSensor.attributes?.battery_type !== undefined ||
+            regPrimary?.platform === 'battery_notes')
       ) ||
       Boolean(allAttrs.battery_type !== undefined || allAttrs.battery_type_and_quantity !== undefined) ||
-      entities.some(e => {
-        const r = registries?.entities?.get(e.entity_id) || hass.entities?.[e.entity_id];
-        return r?.platform === 'battery_notes';
-      });
+      regPrimary?.platform === 'battery_notes';
 
-    if (!isExplicitlyAllowed && !hasPlusSensor && !hasBatteryNotesSignature) {
+    if (!isExplicitlyAllowed && !hasBatteryNotesSignature) {
       continue;
     }
-
-    const primaryEntity = plusSensor || typeSensor || entities[0];
 
     // Find original / companion battery sensor in hass.states
     let companionBatterySensor: HassEntity | undefined;
@@ -754,6 +782,7 @@ export function extractBatteryDevices(
       note: allAttrs.note,
       buttonEntityId,
       isUnavailable,
+      hasPlusSensor,
       state: primaryEntity.state,
     });
   }
@@ -854,6 +883,10 @@ export function sanitizeCardConfig(config: BatteryNotesCardConfig): BatteryNotes
 
   if (cleanConfig.unavailable_first !== undefined && typeof cleanConfig.unavailable_first !== 'boolean') {
     cleanConfig.unavailable_first = Boolean(cleanConfig.unavailable_first);
+  }
+
+  if (cleanConfig.battery_plus_only !== undefined && typeof cleanConfig.battery_plus_only !== 'boolean') {
+    cleanConfig.battery_plus_only = Boolean(cleanConfig.battery_plus_only);
   }
 
   return cleanConfig;
